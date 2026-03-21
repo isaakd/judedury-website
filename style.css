@@ -6,18 +6,35 @@
 }
 
 :root {
-    --sky-top: #4a90d9;
-    --sky-bottom: #87ceeb;
-    --ground: #5a8f29;
-    --ground-dark: #4a7a1f;
-    --dirt: #8B6914;
-    --dirt-dark: #6b4f10;
-    --pixel-shadow: #2a1a0a;
+    /* Ghibli warm palette */
+    --sky-top: #2d5a8e;
+    --sky-mid: #6ba3d6;
+    --sky-bottom: #f0d9a8;
+    --sky-horizon: #fceabb;
+    --ground: #6aad45;
+    --ground-light: #8cc63f;
+    --ground-dark: #4a8a2a;
+    --dirt: #a07840;
+    --dirt-dark: #7a5c30;
+    --hill-far: #7db68a;
+    --hill-mid: #5a9e5a;
+    --hill-near: #4a8a3a;
+    --tree-trunk: #6b4226;
+    --tree-dark: #2a6e2a;
+    --tree-mid: #3d8c3d;
+    --tree-light: #6ab84a;
+    --tree-highlight: #a0d860;
+    --warm-overlay: rgba(255, 200, 100, 0.08);
+    --gold: #ffd700;
+    --gold-dark: #b8960b;
     --pink: #f5a0c0;
     --blue: #7ec8e3;
-    --gold: #ffd700;
     --white: #fff;
+    --cream: #fef9ef;
     --dark: #1a1a2e;
+    --pixel-shadow: #2a1a0a;
+    --sun-color: #fff4d4;
+    --sun-glow: rgba(255, 220, 120, 0.5);
 }
 
 html, body {
@@ -35,13 +52,31 @@ html, body {
 #title-screen {
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 60%, #a8d8a8 80%, var(--ground) 80%);
+    background: linear-gradient(180deg,
+        #2d5a8e 0%,
+        #5a8ec0 25%,
+        #8ec0e8 45%,
+        #fceabb 65%,
+        #f0c878 72%,
+        #8cc63f 78%,
+        #6aad45 78%,
+        #5a9a35 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
+}
+
+/* Title screen warm atmosphere */
+#title-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 40%, rgba(255, 200, 80, 0.25) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .title-content {
@@ -57,10 +92,11 @@ html, body {
 
 .title-text {
     font-size: clamp(2rem, 8vw, 5rem);
-    color: var(--gold);
+    color: var(--cream);
     text-shadow:
-        4px 4px 0 #b8860b,
-        6px 6px 0 rgba(0,0,0,0.3);
+        0 0 20px rgba(255, 220, 120, 0.6),
+        3px 3px 0 #c08830,
+        5px 5px 0 rgba(0,0,0,0.2);
     letter-spacing: 4px;
     line-height: 1.3;
     margin-bottom: 20px;
@@ -68,8 +104,8 @@ html, body {
 
 .title-subtitle {
     font-size: clamp(0.5rem, 2vw, 1rem);
-    color: var(--white);
-    text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+    color: var(--cream);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.3), 0 0 10px rgba(255, 220, 120, 0.4);
     margin-bottom: 40px;
     animation: blink 1.5s ease-in-out infinite;
 }
@@ -83,15 +119,16 @@ html, body {
     font-family: 'Press Start 2P', monospace;
     font-size: clamp(0.7rem, 2.5vw, 1.2rem);
     padding: 16px 32px;
-    background: var(--gold);
-    color: var(--dark);
+    background: linear-gradient(180deg, #ffe680 0%, #ffc830 100%);
+    color: #5a3a10;
     border: none;
     cursor: pointer;
     position: relative;
     transition: transform 0.1s;
     box-shadow:
-        0 4px 0 #b8860b,
+        0 4px 0 #b08020,
         0 6px 0 rgba(0,0,0,0.2),
+        0 0 20px rgba(255, 200, 80, 0.3),
         inset 0 -2px 0 rgba(0,0,0,0.1);
     border-radius: 4px;
 }
@@ -99,15 +136,16 @@ html, body {
 .pixel-btn:hover {
     transform: translateY(-2px);
     box-shadow:
-        0 6px 0 #b8860b,
+        0 6px 0 #b08020,
         0 8px 0 rgba(0,0,0,0.2),
+        0 0 30px rgba(255, 200, 80, 0.5),
         inset 0 -2px 0 rgba(0,0,0,0.1);
 }
 
 .pixel-btn:active {
     transform: translateY(2px);
     box-shadow:
-        0 2px 0 #b8860b,
+        0 2px 0 #b08020,
         0 3px 0 rgba(0,0,0,0.2),
         inset 0 -2px 0 rgba(0,0,0,0.1);
 }
@@ -127,35 +165,38 @@ html, body {
 
 .cloud {
     position: absolute;
-    background: var(--white);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 245, 225, 0.9) 100%);
     border-radius: 20px;
-    opacity: 0.9;
+    opacity: 0.85;
+    box-shadow:
+        0 4px 15px rgba(180, 140, 80, 0.12),
+        inset 0 -3px 8px rgba(255, 220, 150, 0.15);
 }
 
 .cloud::before, .cloud::after {
     content: '';
     position: absolute;
-    background: var(--white);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 245, 225, 0.9) 100%);
     border-radius: 50%;
 }
 
 .cloud-1 {
     width: 120px; height: 40px; top: 15%; left: -120px;
-    animation: cloudMove 20s linear infinite;
+    animation: cloudMove 25s linear infinite;
 }
 .cloud-1::before { width: 50px; height: 50px; top: -25px; left: 20px; }
 .cloud-1::after { width: 70px; height: 60px; top: -30px; left: 50px; }
 
 .cloud-2 {
     width: 100px; height: 35px; top: 30%; left: -100px;
-    animation: cloudMove 25s linear infinite 5s;
+    animation: cloudMove 32s linear infinite 5s;
 }
 .cloud-2::before { width: 45px; height: 45px; top: -22px; left: 15px; }
 .cloud-2::after { width: 55px; height: 50px; top: -25px; left: 40px; }
 
 .cloud-3 {
     width: 80px; height: 30px; top: 10%; left: -80px;
-    animation: cloudMove 18s linear infinite 10s;
+    animation: cloudMove 22s linear infinite 10s;
 }
 .cloud-3::before { width: 40px; height: 40px; top: -20px; left: 10px; }
 .cloud-3::after { width: 50px; height: 45px; top: -22px; left: 30px; }
@@ -169,10 +210,27 @@ html, body {
     position: absolute;
     bottom: 0;
     width: 100%;
-    height: 20%;
+    height: 22%;
     background:
-        repeating-linear-gradient(90deg, var(--ground) 0px, var(--ground) 32px, var(--ground-dark) 32px, var(--ground-dark) 64px);
-    background-size: 64px 100%;
+        linear-gradient(180deg, #8cc63f 0%, #6aad45 30%, #5a9a35 100%);
+}
+
+/* Grass edge on title ground */
+.title-ground::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    width: 100%;
+    height: 16px;
+    background: repeating-linear-gradient(90deg,
+        transparent 0px, transparent 4px,
+        #8cc63f 4px, #8cc63f 6px,
+        transparent 6px, transparent 12px,
+        #6aad45 12px, #6aad45 14px,
+        transparent 14px, transparent 20px);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 50%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 50%);
 }
 
 /* ===== GAME WORLD ===== */
@@ -183,53 +241,125 @@ html, body {
     overflow: hidden;
 }
 
-/* Sky */
+/* Warm atmosphere overlay */
+#game-world::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 80% 15%, rgba(255, 220, 120, 0.15) 0%, transparent 50%),
+        linear-gradient(180deg, transparent 0%, transparent 70%, rgba(255, 200, 100, 0.05) 100%);
+    pointer-events: none;
+    z-index: 50;
+    mix-blend-mode: screen;
+}
+
+/* Vignette */
+#game-world::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(20, 15, 10, 0.25) 100%);
+    pointer-events: none;
+    z-index: 51;
+}
+
+/* ===== SKY ===== */
 #sky {
     position: absolute;
     width: 100%;
-    height: 55%;
+    height: 58%;
     top: 0;
-    background: linear-gradient(180deg, #3a70b0 0%, var(--sky-top) 30%, var(--sky-bottom) 100%);
+    background: linear-gradient(180deg,
+        #1e4470 0%,
+        #2d5a8e 15%,
+        #5a8ec0 35%,
+        #8ec0e8 55%,
+        #c8e0f0 70%,
+        #f0dbb8 85%,
+        #f8e8c0 95%,
+        #fceabb 100%);
 }
 
+/* God rays from sun */
+#sky::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 5%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        200deg,
+        rgba(255, 240, 180, 0.2) 0%,
+        rgba(255, 220, 120, 0.08) 30%,
+        transparent 60%
+    );
+    pointer-events: none;
+}
+
+/* Sun */
 .sun {
     position: absolute;
-    width: 60px;
-    height: 60px;
-    background: var(--gold);
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle,
+        #fffef0 0%,
+        #fff4d4 40%,
+        #ffe88a 70%,
+        rgba(255, 220, 100, 0) 100%);
     border-radius: 50%;
-    top: 8%;
+    top: 6%;
     right: 12%;
     box-shadow:
-        0 0 30px rgba(255, 215, 0, 0.6),
-        0 0 60px rgba(255, 215, 0, 0.3);
-    animation: sunPulse 4s ease-in-out infinite;
+        0 0 40px rgba(255, 240, 180, 0.8),
+        0 0 80px rgba(255, 220, 100, 0.4),
+        0 0 120px rgba(255, 200, 60, 0.2);
+    animation: sunPulse 6s ease-in-out infinite;
 }
 
 @keyframes sunPulse {
-    0%, 100% { box-shadow: 0 0 30px rgba(255,215,0,0.6), 0 0 60px rgba(255,215,0,0.3); }
-    50% { box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 80px rgba(255,215,0,0.4); }
+    0%, 100% {
+        box-shadow:
+            0 0 40px rgba(255,240,180,0.8),
+            0 0 80px rgba(255,220,100,0.4),
+            0 0 120px rgba(255,200,60,0.2);
+    }
+    50% {
+        box-shadow:
+            0 0 50px rgba(255,240,180,0.9),
+            0 0 100px rgba(255,220,100,0.5),
+            0 0 150px rgba(255,200,60,0.3);
+    }
 }
 
+/* Clouds - warm tinted, softer */
 .game-cloud {
     z-index: 2;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow:
+        0 4px 20px rgba(180, 140, 80, 0.1),
+        inset 0 -4px 10px rgba(255, 220, 150, 0.2);
+}
+.game-cloud::before, .game-cloud::after {
+    background: rgba(255, 255, 255, 0.85);
 }
 
-.gc-1 { width: 140px; height: 45px; top: 8%; animation: cloudMove 30s linear infinite; }
-.gc-1::before { width: 55px; height: 55px; top: -28px; left: 25px; }
-.gc-1::after { width: 75px; height: 65px; top: -32px; left: 55px; }
+.gc-1 { width: 160px; height: 50px; top: 8%; animation: cloudMove 35s linear infinite; }
+.gc-1::before { width: 65px; height: 60px; top: -30px; left: 25px; }
+.gc-1::after { width: 85px; height: 70px; top: -35px; left: 60px; }
 
-.gc-2 { width: 100px; height: 35px; top: 22%; animation: cloudMove 40s linear infinite 8s; }
-.gc-2::before { width: 40px; height: 40px; top: -20px; left: 15px; }
-.gc-2::after { width: 55px; height: 50px; top: -25px; left: 40px; }
+.gc-2 { width: 120px; height: 40px; top: 22%; animation: cloudMove 45s linear infinite 8s; }
+.gc-2::before { width: 50px; height: 48px; top: -24px; left: 18px; }
+.gc-2::after { width: 65px; height: 55px; top: -28px; left: 48px; }
 
-.gc-3 { width: 120px; height: 40px; top: 5%; animation: cloudMove 35s linear infinite 15s; }
-.gc-3::before { width: 50px; height: 50px; top: -25px; left: 20px; }
-.gc-3::after { width: 65px; height: 55px; top: -28px; left: 45px; }
+.gc-3 { width: 140px; height: 45px; top: 5%; animation: cloudMove 40s linear infinite 15s; }
+.gc-3::before { width: 55px; height: 55px; top: -28px; left: 22px; }
+.gc-3::after { width: 75px; height: 62px; top: -32px; left: 52px; }
 
-.gc-4 { width: 90px; height: 32px; top: 18%; animation: cloudMove 28s linear infinite 22s; }
-.gc-4::before { width: 38px; height: 38px; top: -19px; left: 12px; }
-.gc-4::after { width: 48px; height: 42px; top: -21px; left: 35px; }
+.gc-4 { width: 100px; height: 36px; top: 16%; animation: cloudMove 30s linear infinite 22s; }
+.gc-4::before { width: 42px; height: 42px; top: -21px; left: 14px; }
+.gc-4::after { width: 54px; height: 48px; top: -24px; left: 40px; }
 
 /* Birds */
 .bird {
@@ -244,7 +374,7 @@ html, body {
     position: absolute;
     width: 8px;
     height: 4px;
-    background: #333;
+    background: #4a3828;
     border-radius: 50% 50% 0 0;
     animation: birdFlap 0.6s ease-in-out infinite alternate;
 }
@@ -257,57 +387,127 @@ html, body {
     to { transform: rotate(20deg); }
 }
 
-.bird-1 { top: 12%; left: -20px; animation: cloudMove 15s linear infinite 3s; }
-.bird-2 { top: 16%; left: -20px; animation: cloudMove 18s linear infinite 9s; }
+.bird-1 { top: 12%; left: -20px; animation: cloudMove 18s linear infinite 3s; }
+.bird-2 { top: 16%; left: -20px; animation: cloudMove 22s linear infinite 9s; }
 
-/* Hills */
+/* ===== HILLS - Ghibli painted style ===== */
 #hills {
     position: absolute;
     width: 100%;
-    height: 30%;
-    bottom: 25%;
+    height: 35%;
+    bottom: 22%;
     z-index: 1;
 }
 
 .hill {
     position: absolute;
     bottom: 0;
-    border-radius: 50%;
+    border-radius: 50% 50% 0 0;
 }
 
+/* Far hill - misty, blue-green, atmospheric perspective */
 .hill-back {
+    width: 700px;
+    height: 240px;
+    background: linear-gradient(180deg,
+        #8dc0a0 0%,
+        #7db68a 40%,
+        #6da878 100%);
+    left: -8%;
+    bottom: -20px;
+    opacity: 0.7;
+    filter: blur(1px);
+    box-shadow: inset 0 -20px 40px rgba(90, 150, 100, 0.3);
+}
+
+/* Mid hill - warm green */
+.hill-mid {
     width: 600px;
     height: 200px;
-    background: #6aaa3a;
-    left: -5%;
-    bottom: -60px;
+    background: linear-gradient(180deg,
+        #6aad60 0%,
+        #5a9e50 50%,
+        #4a8a3a 100%);
+    right: -8%;
+    bottom: -30px;
+    opacity: 0.8;
+    box-shadow: inset 0 -15px 30px rgba(60, 120, 50, 0.3);
 }
 
-.hill-mid {
-    width: 500px;
-    height: 180px;
-    background: #5a9a2a;
-    right: -5%;
-    bottom: -70px;
-}
-
+/* Front hill - rich green, most detail */
 .hill-front {
-    width: 700px;
-    height: 160px;
-    background: #4a8a1a;
-    left: 30%;
-    bottom: -80px;
+    width: 800px;
+    height: 180px;
+    background: linear-gradient(160deg,
+        #7cc050 0%,
+        #5aaa3a 40%,
+        #4a8a2a 70%,
+        #3a7a1a 100%);
+    left: 25%;
+    bottom: -40px;
+    box-shadow:
+        inset 0 -10px 25px rgba(40, 100, 30, 0.3),
+        inset 10px 0 30px rgba(120, 200, 80, 0.15);
 }
 
-/* Ground */
+/* ===== GROUND ===== */
 #ground {
     position: absolute;
     width: 3200px;
     height: 35%;
     bottom: 0;
-    background: linear-gradient(180deg, var(--ground) 0%, var(--ground) 70%, var(--dirt) 70%, var(--dirt) 100%);
+    background: linear-gradient(180deg,
+        #7cc050 0%,
+        #6aad45 8%,
+        #5a9a35 25%,
+        #4a8a2a 50%,
+        var(--dirt) 70%,
+        var(--dirt-dark) 100%);
     z-index: 5;
     transition: transform 0.05s linear;
+}
+
+/* Grass edge along top of ground */
+#ground::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    width: 100%;
+    height: 24px;
+    background:
+        repeating-linear-gradient(85deg,
+            transparent 0px, transparent 3px,
+            #8cc63f 3px, #8cc63f 5px,
+            transparent 5px, transparent 7px),
+        repeating-linear-gradient(95deg,
+            transparent 0px, transparent 5px,
+            #6aad45 5px, #6aad45 7px,
+            transparent 7px, transparent 11px),
+        repeating-linear-gradient(88deg,
+            transparent 0px, transparent 8px,
+            #a0d850 8px, #a0d850 10px,
+            transparent 10px, transparent 16px);
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 40%, #000 100%);
+}
+
+/* Subtle light dappling on ground */
+#ground::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background:
+        radial-gradient(ellipse 30px 15px at 200px 20px, rgba(255,255,200,0.08) 0%, transparent 100%),
+        radial-gradient(ellipse 25px 12px at 600px 30px, rgba(255,255,200,0.06) 0%, transparent 100%),
+        radial-gradient(ellipse 35px 18px at 1100px 15px, rgba(255,255,200,0.07) 0%, transparent 100%),
+        radial-gradient(ellipse 28px 14px at 1700px 25px, rgba(255,255,200,0.05) 0%, transparent 100%),
+        radial-gradient(ellipse 32px 16px at 2300px 18px, rgba(255,255,200,0.06) 0%, transparent 100%),
+        radial-gradient(ellipse 40px 20px at 2800px 22px, rgba(255,255,200,0.07) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 #ground-tiles {
@@ -316,19 +516,23 @@ html, body {
     width: 100%;
     height: 10%;
     background:
-        repeating-linear-gradient(90deg, var(--dirt) 0px, var(--dirt) 32px, var(--dirt-dark) 32px, var(--dirt-dark) 64px);
+        repeating-linear-gradient(90deg,
+            var(--dirt) 0px, var(--dirt) 32px,
+            var(--dirt-dark) 32px, var(--dirt-dark) 64px);
     z-index: 4;
 }
 
-/* ===== TREES (CSS pixel art) ===== */
+/* ===== TREES - flat pixel art style ===== */
 .tree {
     position: absolute;
-    width: 64px;
-    height: 96px;
-    bottom: 65%;
+    width: 90px;
+    height: 130px;
+    bottom: 63%;
     z-index: 6;
+    image-rendering: pixelated;
 }
 
+/* Trunk - flat with hard shadow */
 .tree::before {
     content: '';
     position: absolute;
@@ -336,50 +540,57 @@ html, body {
     left: 50%;
     transform: translateX(-50%);
     width: 16px;
-    height: 40px;
-    background: #8B4513;
-    border-radius: 2px;
+    height: 48px;
+    background: #6b4226;
+    box-shadow: inset -5px 0 0 #5a3218;
 }
 
+/* Canopy - flat pixel art, hard-edged shading */
 .tree::after {
     content: '';
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 56px;
-    height: 60px;
-    background: radial-gradient(ellipse, #3a8a2a 30%, #2a7a1a 60%, #1a6a0a 100%);
-    border-radius: 50% 50% 45% 45%;
-    box-shadow: inset -8px -4px 0 rgba(0,0,0,0.15);
+    width: 80px;
+    height: 82px;
+    background: #4a9a3a;
+    border-radius: 50%;
+    box-shadow:
+        inset -18px -14px 0 #3a8228,
+        inset 12px 10px 0 #5cb048,
+        inset 4px 16px 0 #68c858;
 }
 
 .tree-1 { left: 50px; }
-.tree-2 { left: 450px; transform: scale(1.2); }
-.tree-3 { left: 900px; transform: scale(0.9); }
-.tree-4 { left: 1800px; transform: scale(1.1); }
-.tree-5 { left: 2600px; }
+.tree-2 { left: 450px; transform: scale(1.3); bottom: 62%; }
+.tree-3 { left: 900px; transform: scale(0.95); }
+.tree-4 { left: 1800px; transform: scale(1.15); bottom: 62%; }
+.tree-5 { left: 2600px; transform: scale(1.05); }
 
-/* Flowers */
+/* ===== FLOWERS - Ghibli wildflowers ===== */
 .flower {
     position: absolute;
-    width: 12px;
-    height: 20px;
-    bottom: 68%;
+    width: 14px;
+    height: 22px;
+    bottom: 66%;
     z-index: 7;
 }
 
+/* Stem */
 .flower::before {
     content: '';
     position: absolute;
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 3px;
+    width: 2px;
     height: 12px;
-    background: #3a7a2a;
+    background: linear-gradient(180deg, #5aaa40 0%, #3d8c30 100%);
+    border-radius: 1px;
 }
 
+/* Flower head with petals */
 .flower::after {
     content: '';
     position: absolute;
@@ -389,7 +600,7 @@ html, body {
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    animation: flowerSway 3s ease-in-out infinite;
+    animation: flowerSway 4s ease-in-out infinite;
 }
 
 @keyframes flowerSway {
@@ -398,29 +609,54 @@ html, body {
 }
 
 .flower-1 { left: 120px; }
-.flower-1::after { background: #ff6b8a; }
+.flower-1::after {
+    background: #ff7eb3;
+    box-shadow: -4px 0 0 #ff9ec8, 4px 0 0 #ff9ec8, 0 -4px 0 #ff9ec8, 0 4px 0 #ff9ec8, 0 0 4px rgba(255,126,179,0.3);
+}
 .flower-2 { left: 300px; }
-.flower-2::after { background: #ffdb4d; }
+.flower-2::after {
+    background: #ffe066;
+    box-shadow: -4px 0 0 #ffeb8a, 4px 0 0 #ffeb8a, 0 -4px 0 #ffeb8a, 0 4px 0 #ffeb8a, 0 0 4px rgba(255,224,102,0.3);
+}
 .flower-3 { left: 550px; }
-.flower-3::after { background: #ff9ff3; }
+.flower-3::after {
+    background: #c9a0ff;
+    box-shadow: -4px 0 0 #dbb8ff, 4px 0 0 #dbb8ff, 0 -4px 0 #dbb8ff, 0 4px 0 #dbb8ff, 0 0 4px rgba(201,160,255,0.3);
+}
 .flower-4 { left: 750px; }
-.flower-4::after { background: #ff6b8a; }
+.flower-4::after {
+    background: #ff8a8a;
+    box-shadow: -4px 0 0 #ffa8a8, 4px 0 0 #ffa8a8, 0 -4px 0 #ffa8a8, 0 4px 0 #ffa8a8, 0 0 4px rgba(255,138,138,0.3);
+}
 .flower-5 { left: 1100px; }
-.flower-5::after { background: #74b9ff; }
+.flower-5::after {
+    background: #8ac8ff;
+    box-shadow: -4px 0 0 #a8d8ff, 4px 0 0 #a8d8ff, 0 -4px 0 #a8d8ff, 0 4px 0 #a8d8ff, 0 0 4px rgba(138,200,255,0.3);
+}
 .flower-6 { left: 1500px; }
-.flower-6::after { background: #ffdb4d; }
+.flower-6::after {
+    background: #ffb366;
+    box-shadow: -4px 0 0 #ffc88a, 4px 0 0 #ffc88a, 0 -4px 0 #ffc88a, 0 4px 0 #ffc88a, 0 0 4px rgba(255,179,102,0.3);
+}
 .flower-7 { left: 2000px; }
-.flower-7::after { background: #ff9ff3; }
+.flower-7::after {
+    background: #ff7eb3;
+    box-shadow: -4px 0 0 #ff9ec8, 4px 0 0 #ff9ec8, 0 -4px 0 #ff9ec8, 0 4px 0 #ff9ec8, 0 0 4px rgba(255,126,179,0.3);
+}
 .flower-8 { left: 2400px; }
-.flower-8::after { background: #ff6b8a; }
+.flower-8::after {
+    background: #ffe066;
+    box-shadow: -4px 0 0 #ffeb8a, 4px 0 0 #ffeb8a, 0 -4px 0 #ffeb8a, 0 4px 0 #ffeb8a, 0 0 4px rgba(255,224,102,0.3);
+}
 
 /* ===== JUDE CHARACTER ===== */
 #jude {
     position: absolute;
-    bottom: 68%;
+    bottom: 66%;
     left: 100px;
     z-index: 20;
     transition: none;
+    filter: drop-shadow(2px 3px 2px rgba(30, 50, 20, 0.3));
 }
 
 #jude-sprite {
@@ -434,21 +670,20 @@ html, body {
 #jude-name {
     font-family: 'Press Start 2P', monospace;
     font-size: 7px;
-    color: var(--white);
+    color: var(--cream);
     text-align: center;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.8), 0 0 6px rgba(255,220,120,0.3);
     margin-top: 2px;
 }
-
-/* Walk animation handled by canvas sprite renderer */
 
 /* ===== WORLD OBJECTS ===== */
 .world-object {
     position: absolute;
-    bottom: 68%;
+    bottom: 66%;
     z-index: 15;
     cursor: pointer;
     transition: transform 0.2s;
+    filter: drop-shadow(2px 3px 2px rgba(30, 50, 20, 0.25));
 }
 
 .world-object:hover {
@@ -461,8 +696,8 @@ html, body {
 }
 
 .obj-sprite {
-    width: 128px;
-    height: 128px;
+    width: 144px;
+    height: 144px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
@@ -472,10 +707,10 @@ html, body {
 .obj-label {
     font-family: 'Press Start 2P', monospace;
     font-size: 6px;
-    color: var(--white);
+    color: var(--cream);
     text-align: center;
     text-shadow: 1px 1px 0 rgba(0,0,0,0.8);
-    background: rgba(0,0,0,0.6);
+    background: rgba(30, 50, 20, 0.7);
     padding: 3px 6px;
     border-radius: 3px;
     position: absolute;
@@ -485,6 +720,7 @@ html, body {
     opacity: 0;
     transition: all 0.2s;
     white-space: nowrap;
+    border: 1px solid rgba(255, 220, 120, 0.2);
 }
 
 /* Object positioning */
@@ -502,14 +738,15 @@ html, body {
 
 /* Interaction glow */
 .world-object.nearby {
-    filter: brightness(1.2);
+    filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 220, 120, 0.5));
 }
 
 .world-object.nearby .obj-label {
     opacity: 1;
     transform: translateX(-50%) translateY(-5px);
-    background: rgba(255, 215, 0, 0.8);
-    color: #1a1a2e;
+    background: rgba(255, 200, 80, 0.85);
+    color: #3a2a10;
+    border-color: rgba(255, 220, 120, 0.6);
 }
 
 /* Bounce animation for nearby objects */
@@ -533,18 +770,19 @@ html, body {
     justify-content: space-between;
     align-items: center;
     z-index: 100;
-    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba(20, 15, 10, 0.5) 0%, transparent 100%);
 }
 
 .hud-left {
     font-size: clamp(8px, 2vw, 14px);
-    color: var(--gold);
-    text-shadow: 2px 2px 0 rgba(0,0,0,0.8);
+    color: var(--cream);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.8), 0 0 10px rgba(255, 220, 120, 0.3);
 }
 
 .hud-star {
     animation: starSpin 2s linear infinite;
     display: inline-block;
+    color: var(--gold);
 }
 
 @keyframes starSpin {
@@ -561,20 +799,23 @@ html, body {
     font-size: 18px;
     width: 36px;
     height: 36px;
-    border: 2px solid var(--gold);
-    background: rgba(0,0,0,0.5);
-    color: var(--white);
+    border: 2px solid rgba(255, 220, 120, 0.6);
+    background: rgba(30, 25, 15, 0.5);
+    color: var(--cream);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    backdrop-filter: blur(4px);
 }
 
 .hud-btn:hover {
-    background: var(--gold);
-    color: var(--dark);
+    background: rgba(255, 200, 80, 0.8);
+    color: #3a2a10;
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 200, 80, 0.3);
 }
 
 /* ===== MOBILE CONTROLS ===== */
@@ -594,9 +835,9 @@ html, body {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    border: 3px solid rgba(255,255,255,0.6);
-    background: rgba(0,0,0,0.4);
-    color: var(--white);
+    border: 3px solid rgba(255,255,255,0.5);
+    background: rgba(30, 25, 15, 0.4);
+    color: var(--cream);
     font-size: 20px;
     cursor: pointer;
     display: flex;
@@ -604,16 +845,17 @@ html, body {
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    backdrop-filter: blur(4px);
 }
 
 .ctrl-btn:active {
-    background: rgba(255,215,0,0.5);
+    background: rgba(255,200,80,0.5);
     border-color: var(--gold);
 }
 
 #ctrl-action {
-    background: rgba(255,215,0,0.3);
-    border-color: var(--gold);
+    background: rgba(255,200,80,0.25);
+    border-color: rgba(255, 220, 120, 0.6);
 }
 
 @media (pointer: coarse), (max-width: 768px) {
@@ -626,14 +868,16 @@ html, body {
     bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--white);
-    border: 4px solid var(--dark);
+    background: var(--cream);
+    border: 3px solid #5a4a30;
     border-radius: 12px;
     padding: 16px 20px;
     max-width: 90%;
     width: 400px;
     z-index: 90;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
+    box-shadow:
+        4px 4px 0 rgba(60, 40, 20, 0.3),
+        0 0 20px rgba(255, 200, 80, 0.1);
 }
 
 #speech-bubble::after {
@@ -646,14 +890,14 @@ html, body {
     height: 0;
     border-left: 12px solid transparent;
     border-right: 12px solid transparent;
-    border-top: 16px solid var(--dark);
+    border-top: 16px solid #5a4a30;
 }
 
 #speech-text {
     font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     line-height: 1.8;
-    color: var(--dark);
+    color: #3a2a15;
 }
 
 #speech-close {
@@ -667,20 +911,21 @@ html, body {
 }
 
 #speech-close:hover {
-    color: var(--dark);
+    color: #5a4a30;
 }
 
 /* ===== MODALS ===== */
 .modal {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(15, 10, 5, 0.75);
     z-index: 200;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     animation: modalFadeIn 0.3s ease;
+    backdrop-filter: blur(2px);
 }
 
 @keyframes modalFadeIn {
@@ -689,15 +934,17 @@ html, body {
 }
 
 .modal-content {
-    background: #1a1a2e;
-    border: 4px solid var(--gold);
+    background: linear-gradient(180deg, #1e1e35 0%, #15152a 100%);
+    border: 3px solid rgba(255, 200, 80, 0.6);
     border-radius: 12px;
     padding: 24px;
     max-width: 700px;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 0 40px rgba(255,215,0,0.2);
+    box-shadow:
+        0 0 40px rgba(255,200,80,0.15),
+        inset 0 0 30px rgba(255,200,80,0.03);
     animation: modalSlideIn 0.3s ease;
 }
 
@@ -712,18 +959,19 @@ html, body {
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 2px solid rgba(255,215,0,0.3);
+    border-bottom: 2px solid rgba(255,200,80,0.2);
 }
 
 .modal-header h2 {
     font-family: 'Press Start 2P', monospace;
     font-size: clamp(10px, 3vw, 16px);
-    color: var(--gold);
+    color: var(--cream);
+    text-shadow: 0 0 8px rgba(255, 200, 80, 0.3);
 }
 
 .modal-close {
     font-size: 24px;
-    color: #999;
+    color: #888;
     background: none;
     border: none;
     cursor: pointer;
@@ -733,7 +981,7 @@ html, body {
 }
 
 .modal-close:hover {
-    color: var(--white);
+    color: var(--cream);
 }
 
 /* Info modal content */
@@ -741,7 +989,7 @@ html, body {
     font-family: 'Press Start 2P', monospace;
     font-size: 10px;
     line-height: 2;
-    color: #ccc;
+    color: #c8c0b0;
 }
 
 #info-body .info-emoji {
@@ -758,25 +1006,25 @@ html, body {
 
 #info-body .info-facts li {
     padding: 8px 0;
-    border-bottom: 1px solid rgba(255,215,0,0.1);
+    border-bottom: 1px solid rgba(255,200,80,0.1);
 }
 
 #info-body .info-facts li::before {
     content: '> ';
-    color: var(--gold);
+    color: rgba(255, 200, 80, 0.8);
 }
 
 #info-body .info-link {
     display: inline-block;
     margin-top: 16px;
     padding: 10px 20px;
-    background: var(--gold);
-    color: var(--dark);
+    background: linear-gradient(180deg, #ffe680 0%, #ffc830 100%);
+    color: #5a3a10;
     text-decoration: none;
     font-family: 'Press Start 2P', monospace;
     font-size: 9px;
     border-radius: 4px;
-    box-shadow: 0 3px 0 #b8860b;
+    box-shadow: 0 3px 0 #b08020, 0 0 12px rgba(255, 200, 80, 0.2);
     transition: transform 0.1s;
 }
 
@@ -799,15 +1047,16 @@ html, body {
     aspect-ratio: 1;
     border-radius: 8px;
     overflow: hidden;
-    border: 3px solid rgba(255,215,0,0.3);
+    border: 3px solid rgba(255,200,80,0.2);
     cursor: pointer;
     transition: all 0.2s;
     background: #2a2a4e;
 }
 
 .gallery-item:hover {
-    border-color: var(--gold);
+    border-color: rgba(255, 200, 80, 0.7);
     transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 200, 80, 0.15);
 }
 
 .gallery-item img {
@@ -826,8 +1075,8 @@ html, body {
 }
 
 .gallery-empty code {
-    color: var(--gold);
-    background: rgba(255,215,0,0.1);
+    color: rgba(255, 200, 80, 0.8);
+    background: rgba(255,200,80,0.08);
     padding: 2px 6px;
     border-radius: 3px;
 }
@@ -836,7 +1085,7 @@ html, body {
 #lightbox {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.95);
+    background: rgba(10, 8, 5, 0.95);
     z-index: 300;
     display: flex;
     align-items: center;
@@ -848,6 +1097,7 @@ html, body {
     max-height: 90%;
     object-fit: contain;
     border-radius: 4px;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
 }
 
 #lightbox-close {
@@ -855,7 +1105,7 @@ html, body {
     top: 16px;
     right: 20px;
     font-size: 32px;
-    color: #fff;
+    color: var(--cream);
     background: none;
     border: none;
     cursor: pointer;
@@ -865,32 +1115,98 @@ html, body {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 24px;
-    color: #fff;
-    background: rgba(0,0,0,0.5);
+    font-size: 28px;
+    color: var(--cream);
+    background: rgba(30, 25, 15, 0.6);
     border: 2px solid rgba(255,255,255,0.3);
-    width: 44px;
-    height: 44px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
+}
+
+#lightbox-prev:hover, #lightbox-next:hover {
+    background: rgba(255, 200, 80, 0.6);
+    border-color: rgba(255, 220, 120, 0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+#lightbox-close {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#lightbox-close:hover {
+    color: rgba(255, 200, 80, 0.9);
+    transform: scale(1.2);
 }
 
 #lightbox-prev { left: 16px; }
 #lightbox-next { right: 16px; }
 
+/* ===== FLOATING PARTICLES ===== */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    z-index: 8;
+    will-change: transform, opacity;
+}
+
+/* Dandelion seeds */
+.particle-seed {
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 255, 240, 0.7);
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(255, 255, 200, 0.3);
+}
+.particle-seed::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 0;
+    width: 1px;
+    height: 6px;
+    background: rgba(255, 255, 240, 0.4);
+}
+
+/* Leaf particles */
+.particle-leaf {
+    width: 6px;
+    height: 4px;
+    background: rgba(140, 200, 80, 0.5);
+    border-radius: 0 50% 50% 0;
+}
+
+/* Firefly particles (subtle) */
+.particle-firefly {
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 240, 150, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 220, 100, 0.4);
+    animation: fireflyGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes fireflyGlow {
+    0% { opacity: 0.3; box-shadow: 0 0 3px rgba(255, 220, 100, 0.2); }
+    100% { opacity: 0.9; box-shadow: 0 0 8px rgba(255, 220, 100, 0.6); }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
     .world-object .obj-sprite {
-        width: 40px;
-        height: 40px;
+        width: 96px;
+        height: 96px;
     }
 
     #jude-sprite {
-        width: 40px;
-        height: 54px;
+        width: 80px;
+        height: 100px;
     }
 
     .modal-content {
@@ -899,6 +1215,11 @@ html, body {
 
     #speech-bubble {
         bottom: 130px;
+    }
+
+    .tree {
+        width: 70px;
+        height: 100px;
     }
 }
 
@@ -912,20 +1233,21 @@ html, body {
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-    background: var(--gold);
+    background: rgba(255, 200, 80, 0.6);
     border-radius: 4px;
 }
 
-/* ===== PARTICLES (sparkle effect near objects) ===== */
+/* ===== SPARKLE PARTICLES ===== */
 .sparkle {
     position: absolute;
     width: 4px;
     height: 4px;
-    background: var(--gold);
+    background: rgba(255, 220, 120, 0.9);
     border-radius: 50%;
     pointer-events: none;
     z-index: 25;
     animation: sparkleAnim 0.8s ease-out forwards;
+    box-shadow: 0 0 4px rgba(255, 220, 120, 0.5);
 }
 
 @keyframes sparkleAnim {

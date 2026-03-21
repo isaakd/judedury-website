@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Jude's World</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>">
+</head>
+<body>
+    <!-- Title Screen -->
+    <div id="title-screen">
+        <div class="title-clouds">
+            <div class="cloud cloud-1"></div>
+            <div class="cloud cloud-2"></div>
+            <div class="cloud cloud-3"></div>
+        </div>
+        <div class="title-content">
+            <h1 class="title-text">JUDE'S<br>WORLD</h1>
+            <p class="title-subtitle">~ An Adventure Awaits ~</p>
+            <button id="start-btn" class="pixel-btn">
+                <span class="btn-icon">&#9654;</span> PRESS START
+            </button>
+        </div>
+        <div class="title-ground"></div>
+    </div>
+
+    <!-- Game World -->
+    <div id="game-world" class="hidden">
+        <!-- Sky & Scenery -->
+        <div id="sky">
+            <div class="sun"></div>
+            <div class="cloud game-cloud gc-1"></div>
+            <div class="cloud game-cloud gc-2"></div>
+            <div class="cloud game-cloud gc-3"></div>
+            <div class="cloud game-cloud gc-4"></div>
+            <div class="bird bird-1"></div>
+            <div class="bird bird-2"></div>
+        </div>
+
+        <!-- Parallax Hills -->
+        <div id="hills">
+            <div class="hill hill-back"></div>
+            <div class="hill hill-mid"></div>
+            <div class="hill hill-front"></div>
+        </div>
+
+        <!-- Ground Layer -->
+        <div id="ground">
+            <!-- Interactive Objects -->
+            <div class="world-object" id="obj-bike" data-name="bike" title="Jude's Bike">
+                <div class="obj-sprite bike-sprite"></div>
+                <div class="obj-label">BIKE</div>
+            </div>
+            <div class="world-object" id="obj-baseball" data-name="baseball" title="Baseball">
+                <div class="obj-sprite baseball-sprite"></div>
+                <div class="obj-label">BASEBALL</div>
+            </div>
+            <div class="world-object" id="obj-beyblade" data-name="beyblade" title="Beyblade Arena">
+                <div class="obj-sprite beyblade-sprite"></div>
+                <div class="obj-label">BEYBLADE</div>
+            </div>
+            <div class="world-object" id="obj-dino" data-name="dino" title="Dino Land">
+                <div class="obj-sprite dino-sprite"></div>
+                <div class="obj-label">DINOS</div>
+            </div>
+            <div class="world-object" id="obj-hotwheels" data-name="hotwheels" title="Hot Wheels">
+                <div class="obj-sprite hotwheels-sprite"></div>
+                <div class="obj-label">CARS</div>
+            </div>
+            <div class="world-object" id="obj-lego" data-name="lego" title="Lego Workshop">
+                <div class="obj-sprite lego-sprite"></div>
+                <div class="obj-label">LEGO</div>
+            </div>
+            <div class="world-object" id="obj-gallery" data-name="gallery" title="Photo Gallery">
+                <div class="obj-sprite gallery-sprite"></div>
+                <div class="obj-label">PHOTOS</div>
+            </div>
+            <div class="world-object" id="obj-tennis" data-name="tennis" title="Tennis">
+                <div class="obj-sprite tennis-sprite"></div>
+                <div class="obj-label">TENNIS</div>
+            </div>
+            <div class="world-object" id="obj-cricket" data-name="cricket" title="Cricket">
+                <div class="obj-sprite cricket-sprite"></div>
+                <div class="obj-label">CRICKET</div>
+            </div>
+
+            <!-- Jude Character -->
+            <div id="jude">
+                <div id="jude-sprite"></div>
+                <div id="jude-name">JUDE</div>
+            </div>
+
+            <!-- Trees -->
+            <div class="tree tree-1"></div>
+            <div class="tree tree-2"></div>
+            <div class="tree tree-3"></div>
+            <div class="tree tree-4"></div>
+            <div class="tree tree-5"></div>
+
+            <!-- Flowers -->
+            <div class="flower flower-1"></div>
+            <div class="flower flower-2"></div>
+            <div class="flower flower-3"></div>
+            <div class="flower flower-4"></div>
+            <div class="flower flower-5"></div>
+            <div class="flower flower-6"></div>
+            <div class="flower flower-7"></div>
+            <div class="flower flower-8"></div>
+        </div>
+
+        <!-- Ground Tiles -->
+        <div id="ground-tiles"></div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-left">
+                <span class="hud-star">&#9733;</span> JUDE'S WORLD
+            </div>
+            <div class="hud-right">
+                <button id="sound-btn" class="hud-btn" title="Toggle Music">&#9835;</button>
+                <button id="gallery-btn" class="hud-btn" title="Photo Gallery">&#128247;</button>
+            </div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <button class="ctrl-btn" id="ctrl-left">&#9664;</button>
+            <button class="ctrl-btn" id="ctrl-right">&#9654;</button>
+            <button class="ctrl-btn" id="ctrl-action">&#9733;</button>
+        </div>
+
+        <!-- Speech Bubble -->
+        <div id="speech-bubble" class="hidden">
+            <div id="speech-text"></div>
+            <div id="speech-close">&#10005;</div>
+        </div>
+    </div>
+
+    <!-- Photo Gallery Modal -->
+    <div id="gallery-modal" class="modal hidden">
+        <div class="modal-content gallery-content">
+            <div class="modal-header">
+                <h2>&#128247; JUDE'S PHOTOS</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="gallery-grid"></div>
+            <p class="gallery-empty" id="gallery-empty">No photos yet! Add images to the <code>photos/</code> folder.</p>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="hidden">
+        <img id="lightbox-img" src="" alt="">
+        <button id="lightbox-close">&times;</button>
+        <button id="lightbox-prev">&#9664;</button>
+        <button id="lightbox-next">&#9654;</button>
+    </div>
+
+    <!-- Info Modal -->
+    <div id="info-modal" class="modal hidden">
+        <div class="modal-content info-content">
+            <div class="modal-header">
+                <h2 id="info-title"></h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="info-body"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

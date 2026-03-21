@@ -7,6 +7,9 @@
     const WORLD_WIDTH = 3200;
     const MOVE_SPEED = 4;
     const INTERACTION_DISTANCE = 80;
+    const SPRITE_SCALE = 4; // each pixel in our sprite grid = 4px on canvas
+    const SPRITE_W = 24;    // sprite grid width
+    const SPRITE_H = 32;    // sprite grid height
 
     // ===== STATE =====
     let gameStarted = false;
@@ -15,10 +18,346 @@
     let viewportWidth = window.innerWidth;
     let facingLeft = false;
     let isWalking = false;
+    let walkFrame = 0;
+    let walkTimer = 0;
     let keys = {};
     let nearbyObject = null;
     let musicPlaying = false;
     let audioCtx = null;
+
+    // ===== PIXEL ART SPRITE DATA =====
+    // Color palette
+    const _ = null;
+    const H = '#3d2010';  // hair dark
+    const h = '#5a3520';  // hair mid
+    const c = '#6b4230';  // hair curl highlight
+    const S = '#d4956b';  // skin
+    const E = '#1a1008';  // eye pupil
+    const e = '#ffffff';  // eye shine
+    const W = '#ffffff';  // eye white
+    const P = '#f5a0c0';  // blush pink
+    const M = '#c4766a';  // mouth
+    const m = '#a05a4a';  // mouth shadow
+    const T = '#7ec8e3';  // shirt blue
+    const t = '#5aa8c3';  // shirt shadow
+    const B = '#f5a0c0';  // backpack strap pink
+    const b = '#7ec8e3';  // backpack strap blue
+    const K = '#4a6fa5';  // shorts
+    const k = '#3a5f95';  // shorts shadow
+    const L = '#d4956b';  // legs (skin)
+    const Y = '#f0d020';  // yellow crocs
+    const y = '#d0b010';  // crocs shadow
+
+    // Chibi sprite - oversized anime head, tiny body (24x32 grid)
+    const spriteFrame0 = [
+        [_,_,_,_,_,_,_,c,c,_,_,c,_,_,c,c,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,c,c,H,H,c,c,H,c,H,H,H,c,c,_,_,_,_,_,_],
+        [_,_,_,_,c,H,H,h,h,H,H,h,H,h,h,H,H,H,c,_,_,_,_,_],
+        [_,_,_,c,H,h,h,h,h,h,h,h,h,h,h,h,h,H,H,c,_,_,_,_],
+        [_,_,c,H,h,h,h,h,h,h,h,h,h,h,h,h,h,h,H,H,c,_,_,_],
+        [_,_,c,H,h,h,h,h,h,h,h,h,h,h,h,h,h,h,h,H,c,_,_,_],
+        [_,_,H,h,h,h,S,S,S,S,S,S,S,S,S,S,S,h,h,h,H,_,_,_],
+        [_,c,H,h,h,S,S,S,S,S,S,S,S,S,S,S,S,S,h,h,H,c,_,_],
+        [_,c,H,h,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,h,H,c,_,_],
+        [_,c,h,S,S,S,W,W,E,S,S,S,S,W,W,E,S,S,S,S,h,c,_,_],
+        [_,_,h,S,S,S,e,W,E,S,S,S,S,e,W,E,S,S,S,S,h,_,_,_],
+        [_,_,h,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,S,h,_,_,_],
+        [_,_,h,S,S,P,P,S,S,S,S,S,S,S,S,P,P,S,S,S,h,_,_,_],
+        [_,_,h,S,S,S,S,S,S,S,M,M,S,S,S,S,S,S,S,S,h,_,_,_],
+        [_,_,_,h,S,S,S,S,S,S,m,m,S,S,S,S,S,S,S,h,_,_,_,_],
+        [_,_,_,h,h,S,S,S,S,S,S,S,S,S,S,S,S,S,h,h,_,_,_,_],
+        [_,_,_,_,h,h,S,S,S,S,S,S,S,S,S,S,S,h,h,_,_,_,_,_],
+        [_,_,_,_,_,h,h,h,S,S,S,S,S,S,h,h,h,h,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,B,T,T,T,T,T,T,b,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,B,B,T,T,T,T,T,T,b,b,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,S,B,T,T,T,t,t,T,T,T,b,S,_,_,_,_,_,_,_],
+        [_,_,_,_,_,S,_,T,T,t,t,t,t,T,T,_,S,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,T,T,t,t,t,t,T,T,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,K,K,K,K,K,K,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,K,K,k,k,K,K,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,K,k,_,_,k,K,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,L,L,_,_,L,L,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,L,L,_,_,L,L,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,L,L,_,_,L,L,_,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,Y,Y,Y,_,_,Y,Y,Y,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,Y,y,Y,_,_,Y,y,Y,_,_,_,_,_,_,_,_,_],
+        [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+    ];
+
+    // Walking frame 1: left leg forward, right leg back
+    const spriteFrame1 = spriteFrame0.map((row, ry) => {
+        if (ry === 25) return [_,_,_,_,_,_,_,L,L,_,_,_,_,L,L,_,_,_,_,_,_,_,_,_];
+        if (ry === 26) return [_,_,_,_,_,_,L,L,_,_,_,_,_,_,L,L,_,_,_,_,_,_,_,_];
+        if (ry === 27) return [_,_,_,_,_,_,L,L,_,_,_,_,_,_,_,L,L,_,_,_,_,_,_,_];
+        if (ry === 28) return [_,_,_,_,_,_,L,L,_,_,_,_,_,_,_,L,L,_,_,_,_,_,_,_];
+        if (ry === 29) return [_,_,_,_,_,Y,Y,Y,_,_,_,_,_,_,Y,Y,Y,_,_,_,_,_,_,_];
+        if (ry === 30) return [_,_,_,_,_,Y,y,Y,_,_,_,_,_,_,Y,y,Y,_,_,_,_,_,_,_];
+        return row;
+    });
+
+    // Walking frame 2: right leg forward, left leg back
+    const spriteFrame2 = spriteFrame0.map((row, ry) => {
+        if (ry === 25) return [_,_,_,_,_,_,_,L,L,_,_,_,_,L,L,_,_,_,_,_,_,_,_,_];
+        if (ry === 26) return [_,_,_,_,_,_,_,_,L,L,_,_,L,L,_,_,_,_,_,_,_,_,_,_];
+        if (ry === 27) return [_,_,_,_,_,_,_,_,_,L,L,L,L,_,_,_,_,_,_,_,_,_,_,_];
+        if (ry === 28) return [_,_,_,_,_,_,_,_,_,L,L,L,L,_,_,_,_,_,_,_,_,_,_,_];
+        if (ry === 29) return [_,_,_,_,_,_,_,_,Y,Y,Y,Y,Y,Y,_,_,_,_,_,_,_,_,_,_];
+        if (ry === 30) return [_,_,_,_,_,_,_,_,Y,y,Y,Y,y,Y,_,_,_,_,_,_,_,_,_,_];
+        return row;
+    });
+
+    const spriteFrames = [spriteFrame0, spriteFrame1, spriteFrame0, spriteFrame2];
+
+    function drawSprite(canvas, frameData, flip) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = SPRITE_W * SPRITE_SCALE;
+        canvas.height = SPRITE_H * SPRITE_SCALE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (flip) {
+            ctx.save();
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+        }
+
+        for (let row = 0; row < SPRITE_H; row++) {
+            for (let col = 0; col < SPRITE_W; col++) {
+                const color = frameData[row] && frameData[row][col];
+                if (color) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(col * SPRITE_SCALE, row * SPRITE_SCALE, SPRITE_SCALE, SPRITE_SCALE);
+                }
+            }
+        }
+
+        if (flip) ctx.restore();
+    }
+
+    // ===== WORLD OBJECT PIXEL ART ICONS (16x16 grids, scaled 4x to 64px) =====
+    const ICON_SIZE = 16;
+    const ICON_SCALE = 4;
+
+    // Palette for icons
+    const O = '#e87020'; // orange
+    const o = '#c05818'; // orange dark
+    const G = '#888888'; // grey
+    const g = '#666666'; // grey dark
+    const R = '#e03030'; // red
+    const r = '#b02020'; // red dark
+    const w = '#ffffff'; // white
+    const n = '#1a1a1a'; // near-black
+    const d = '#333333'; // dark grey
+    const F = '#40a030'; // green
+    const f = '#308020'; // green dark
+    const U = '#3070d0'; // blue
+    const u = '#2050a0'; // blue dark
+    const V = '#f0d020'; // yellow
+    const v = '#c0a010'; // yellow dark
+    const p = '#f5a0c0'; // pink
+    const q = '#8B4513'; // brown
+    const Q = '#a0682a'; // brown light
+    const N = '#2ecc71'; // bright green
+    const X = '#1a8a4a'; // dark green
+    const Z = '#f39c12'; // flame orange
+    const J = '#c4c4c4'; // light grey
+    const j = '#a0a0a0'; // mid grey
+
+    const iconData = {
+        // BIKE - orange BMX style
+        bike: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,O,O,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,O,o,_,_,_,_,_,_],
+            [_,_,_,_,_,_,O,O,O,_,_,_,_,_,_,_],
+            [_,_,_,_,_,O,o,_,O,_,_,_,_,_,_,_],
+            [_,_,_,_,O,o,_,_,_,O,_,_,_,_,_,_],
+            [_,_,_,O,o,_,_,_,_,_,O,_,_,_,_,_],
+            [_,_,_,O,_,_,_,_,_,_,O,_,_,_,_,_],
+            [_,_,n,d,n,_,_,_,_,n,d,n,_,_,_,_],
+            [_,n,_,_,_,n,_,_,n,_,_,_,n,_,_,_],
+            [_,n,_,G,_,n,_,_,n,_,G,_,n,_,_,_],
+            [_,n,_,_,_,n,_,_,n,_,_,_,n,_,_,_],
+            [_,_,n,d,n,_,_,_,_,n,d,n,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // BASEBALL - clean ball with red stitching
+        baseball: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,w,w,w,w,w,_,_,_,_,_,_],
+            [_,_,_,_,w,w,w,R,w,w,w,_,_,_,_,_],
+            [_,_,_,w,w,R,w,w,w,R,w,w,_,_,_,_],
+            [_,_,_,w,w,w,R,w,R,w,w,w,_,_,_,_],
+            [_,_,w,w,R,w,w,w,w,w,R,w,w,_,_,_],
+            [_,_,w,w,w,w,w,w,w,w,w,w,w,_,_,_],
+            [_,_,w,w,R,w,w,w,w,w,R,w,w,_,_,_],
+            [_,_,_,w,w,w,R,w,R,w,w,w,_,_,_,_],
+            [_,_,_,w,w,R,w,w,w,R,w,w,_,_,_,_],
+            [_,_,_,_,w,w,w,R,w,w,w,_,_,_,_,_],
+            [_,_,_,_,_,w,w,w,w,w,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // BEYBLADE - spinning top in arena
+        beyblade: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,G,G,G,G,G,G,G,_,_,_,_,_],
+            [_,_,_,G,g,_,_,_,_,_,g,G,_,_,_,_],
+            [_,_,G,_,_,_,_,_,_,_,_,_,G,_,_,_],
+            [_,G,_,_,_,_,U,U,_,_,_,_,_,G,_,_],
+            [_,G,_,_,_,U,u,R,U,_,_,_,_,G,_,_],
+            [_,G,_,_,U,R,V,V,r,U,_,_,_,G,_,_],
+            [_,G,_,_,U,u,V,V,U,u,_,_,_,G,_,_],
+            [_,G,_,_,_,U,u,u,U,_,_,V,_,G,_,_],
+            [_,G,_,_,_,_,U,U,_,_,V,_,_,G,_,_],
+            [_,_,G,_,_,_,_,_,_,_,_,_,G,_,_,_],
+            [_,_,_,G,g,_,_,_,_,_,g,G,_,_,_,_],
+            [_,_,_,_,G,G,G,G,G,G,G,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // DINOSAUR - T-Rex profile
+        dino: [
+            [_,_,_,_,_,_,_,_,_,_,N,N,N,N,_,_],
+            [_,_,_,_,_,_,_,_,_,N,N,N,N,N,N,_],
+            [_,_,_,_,_,_,_,_,_,N,w,N,N,N,N,_],
+            [_,_,_,_,_,_,_,_,_,N,N,N,N,N,N,_],
+            [_,_,_,_,_,_,_,_,_,N,N,w,N,w,N,_],
+            [_,_,_,_,_,_,_,_,N,N,N,N,N,N,_,_],
+            [_,X,_,_,_,_,_,N,N,N,_,_,_,_,_,_],
+            [_,_,X,_,_,_,N,N,N,_,_,_,_,_,_,_],
+            [_,_,_,X,_,N,N,N,N,_,_,_,_,_,_,_],
+            [_,_,_,_,N,N,N,N,N,N,_,_,_,_,_,_],
+            [_,_,_,_,N,N,N,N,f,N,_,_,_,_,_,_],
+            [_,_,_,_,_,N,N,N,_,N,_,_,_,_,_,_],
+            [_,_,_,_,_,N,_,N,_,N,N,_,_,_,_,_],
+            [_,_,_,_,_,N,_,_,_,_,N,_,_,_,_,_],
+            [_,_,_,_,N,N,_,_,_,N,N,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // HOT WHEELS - muscle car with flames
+        hotwheels: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,R,R,R,R,_,_,_,_,_],
+            [_,_,_,_,_,_,R,U,U,U,R,R,_,_,_,_],
+            [_,_,_,R,R,R,R,R,R,R,R,R,R,R,_,_],
+            [_,_,Z,R,R,r,r,R,R,R,r,r,R,R,_,_],
+            [_,Z,V,R,r,r,r,R,R,r,r,r,R,R,R,_],
+            [_,_,Z,R,R,r,r,R,R,R,r,r,R,R,_,_],
+            [_,_,_,n,n,n,_,_,_,_,n,n,n,_,_,_],
+            [_,_,n,g,G,g,n,_,_,n,g,G,g,n,_,_],
+            [_,_,n,G,J,G,n,_,_,n,G,J,G,n,_,_],
+            [_,_,n,g,G,g,n,_,_,n,g,G,g,n,_,_],
+            [_,_,_,n,n,n,_,_,_,_,n,n,n,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // LEGO - Star Wars X-Wing style craft
+        lego: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,G,G,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,G,g,g,G,_,_,_,_,_,_],
+            [_,_,_,_,_,G,g,R,g,g,G,_,_,_,_,_],
+            [_,_,G,G,G,g,g,g,g,g,g,G,G,G,_,_],
+            [_,G,g,g,g,g,g,g,g,g,g,g,g,g,G,_],
+            [_,G,J,J,G,_,_,g,g,_,_,G,J,J,G,_],
+            [_,_,G,G,_,_,_,g,g,_,_,_,G,G,_,_],
+            [_,_,_,_,_,_,g,R,R,g,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,g,g,_,_,_,_,_,_,_],
+            [_,_,G,G,_,_,_,g,g,_,_,_,G,G,_,_],
+            [_,G,J,J,G,_,_,g,g,_,_,G,J,J,G,_],
+            [_,G,g,g,g,g,g,g,g,g,g,g,g,g,G,_],
+            [_,_,G,G,G,g,U,U,U,U,g,G,G,G,_,_],
+            [_,_,_,_,_,_,U,V,V,U,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // GALLERY - camera
+        gallery: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,V,V,V,_,_,_,_,_,_,_],
+            [_,_,_,d,d,d,d,d,d,d,d,d,d,_,_,_],
+            [_,_,d,d,d,d,d,d,d,d,d,d,d,d,_,_],
+            [_,_,d,d,_,_,n,n,n,_,_,d,V,d,_,_],
+            [_,_,d,_,_,n,U,U,U,n,_,_,d,d,_,_],
+            [_,_,d,_,n,U,u,w,U,U,n,_,d,d,_,_],
+            [_,_,d,_,n,U,w,w,U,U,n,_,d,d,_,_],
+            [_,_,d,_,n,U,U,U,U,U,n,_,d,d,_,_],
+            [_,_,d,_,_,n,U,U,U,n,_,_,d,d,_,_],
+            [_,_,d,d,_,_,n,n,n,_,_,d,d,d,_,_],
+            [_,_,d,d,d,d,d,d,d,d,d,d,d,d,_,_],
+            [_,_,_,d,d,d,d,d,d,d,d,d,d,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // TENNIS - racket and ball
+        tennis: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,F,F,F,F,F,_,_,_,_,_,_],
+            [_,_,_,_,F,w,F,w,F,w,F,_,_,_,_,_],
+            [_,_,_,F,F,F,F,F,F,F,F,F,_,_,_,_],
+            [_,_,_,F,w,F,w,F,w,F,w,F,_,_,_,_],
+            [_,_,_,F,F,F,F,F,F,F,F,F,_,_,_,_],
+            [_,_,_,F,w,F,w,F,w,F,w,F,_,_,_,_],
+            [_,_,_,_,F,F,F,F,F,F,F,_,_,_,_,_],
+            [_,_,_,_,_,F,F,F,F,F,_,_,_,_,_,_],
+            [_,_,_,_,_,_,q,q,_,_,_,V,V,_,_,_],
+            [_,_,_,_,_,_,_,q,q,_,V,v,V,_,_,_],
+            [_,_,_,_,_,_,_,_,q,q,V,V,V,_,_,_],
+            [_,_,_,_,_,_,_,_,_,q,_,V,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,q,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+        // CRICKET - bat and ball
+        cricket: [
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,R,R,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,R,r,R,R,_,_],
+            [_,_,_,_,_,_,_,_,_,_,R,R,r,R,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,R,R,_,_,_],
+            [_,_,Q,Q,_,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,Q,Q,Q,_,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,Q,Q,Q,_,_,_,_,_,_,_,_,_,_],
+            [_,_,_,Q,Q,Q,Q,_,_,_,_,_,_,_,_,_],
+            [_,_,_,_,Q,Q,Q,Q,_,_,_,_,_,_,_,_],
+            [_,_,_,_,_,q,q,Q,Q,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,q,q,Q,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,q,q,_,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,q,q,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,q,_,_,_,_,_,_],
+            [_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+        ],
+    };
+
+    function drawIcon(canvas, data) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = ICON_SIZE * ICON_SCALE;
+        canvas.height = ICON_SIZE * ICON_SCALE;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let row = 0; row < ICON_SIZE; row++) {
+            for (let col = 0; col < ICON_SIZE; col++) {
+                const color = data[row] && data[row][col];
+                if (color) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(col * ICON_SCALE, row * ICON_SCALE, ICON_SCALE, ICON_SCALE);
+                }
+            }
+        }
+    }
+
+    function renderAllIcons() {
+        document.querySelectorAll('canvas.obj-sprite[data-icon]').forEach(canvas => {
+            const key = canvas.dataset.icon;
+            if (iconData[key]) drawIcon(canvas, iconData[key]);
+        });
+    }
 
     // ===== DOM REFS =====
     const titleScreen = document.getElementById('title-screen');
@@ -252,9 +591,19 @@
         gameWorld.classList.remove('hidden');
         gameStarted = true;
         loadPhotos();
+        renderJude(); // Draw initial sprite
+        renderAllIcons(); // Draw all world object icons
         updateCamera();
         showSpeech("Hi! I'm JUDE! Use ← → arrow keys to explore my world. Walk up to things and press SPACE or ENTER!");
         gameLoop();
+    }
+
+    // ===== SPRITE RENDERING =====
+    const spriteCanvas = document.getElementById('jude-sprite');
+
+    function renderJude() {
+        const frameIndex = isWalking ? walkFrame : 0;
+        drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }
 
     // ===== MOVEMENT =====
@@ -274,16 +623,21 @@
             moving = true;
         }
 
-        if (moving !== isWalking) {
-            isWalking = moving;
-            jude.classList.toggle('walking', moving);
+        isWalking = moving;
+
+        // Walk animation cycle
+        if (moving) {
+            walkTimer++;
+            if (walkTimer >= 8) { // change frame every 8 ticks
+                walkTimer = 0;
+                walkFrame = (walkFrame + 1) % 4;
+            }
+        } else {
+            walkFrame = 0;
+            walkTimer = 0;
         }
 
-        if (facingLeft) {
-            jude.classList.add('facing-left');
-        } else {
-            jude.classList.remove('facing-left');
-        }
+        renderJude();
 
         jude.style.left = judeX + 'px';
         updateCamera();

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "beyblade",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "/Users/isaakdury/JudeDury Website/beyblade", "-l", "3457"],
+      "port": 3457
+    }
+  ]
+}

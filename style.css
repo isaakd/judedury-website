@@ -424,73 +424,11 @@ html, body {
 }
 
 #jude-sprite {
-    width: 48px;
-    height: 64px;
-    position: relative;
+    width: 96px;
+    height: 128px;
     image-rendering: pixelated;
-}
-
-/* Pixel art Jude - curly brown hair, blue shirt, pink/blue backpack */
-#jude-sprite::before {
-    content: '';
-    position: absolute;
-    width: 48px;
-    height: 64px;
-    background: var(--blue);
-    clip-path: polygon(
-        /* Head */
-        33% 0%, 67% 0%, 75% 5%, 79% 12%, 79% 30%, 75% 35%,
-        /* Body right */
-        71% 38%, 83% 42%, 92% 50%, 92% 65%, 79% 65%, 79% 55%, 71% 50%,
-        /* Legs right */
-        71% 75%, 75% 100%, 58% 100%,
-        /* Legs left */
-        42% 100%, 25% 100%, 29% 75%,
-        /* Body left */
-        29% 50%, 21% 55%, 21% 65%, 8% 65%, 8% 50%, 17% 42%, 29% 38%,
-        /* Head left */
-        25% 35%, 21% 30%, 21% 12%, 25% 5%
-    );
-}
-
-/* Head and hair using box shadows for pixel look */
-#jude-sprite {
-    background:
-        /* Hair - curly brown */
-        radial-gradient(circle at 50% 15%, #5a3520 12px, transparent 12px),
-        radial-gradient(circle at 35% 10%, #6b4230 8px, transparent 8px),
-        radial-gradient(circle at 65% 10%, #6b4230 8px, transparent 8px),
-        radial-gradient(circle at 40% 5%, #5a3520 6px, transparent 6px),
-        radial-gradient(circle at 60% 5%, #5a3520 6px, transparent 6px),
-        radial-gradient(circle at 30% 8%, #5a3520 5px, transparent 5px),
-        radial-gradient(circle at 70% 8%, #5a3520 5px, transparent 5px),
-        /* Curls sticking up */
-        radial-gradient(circle at 45% 0%, #6b4230 4px, transparent 4px),
-        radial-gradient(circle at 55% -1%, #5a3520 4px, transparent 4px),
-        radial-gradient(circle at 38% 2%, #6b4230 3px, transparent 3px),
-        /* Face */
-        radial-gradient(circle at 50% 22%, #e8b87a 10px, transparent 10px),
-        /* Eyes */
-        radial-gradient(circle at 43% 20%, #2a1a0a 2.5px, transparent 2.5px),
-        radial-gradient(circle at 57% 20%, #2a1a0a 2.5px, transparent 2.5px),
-        /* Eye shine */
-        radial-gradient(circle at 44% 19%, white 1px, transparent 1px),
-        radial-gradient(circle at 58% 19%, white 1px, transparent 1px),
-        /* Mouth - happy */
-        radial-gradient(ellipse at 50% 27%, #c4766a 3px, transparent 3px),
-        /* Blush */
-        radial-gradient(ellipse at 38% 25%, #f5a0c0 3px, transparent 3px),
-        radial-gradient(ellipse at 62% 25%, #f5a0c0 3px, transparent 3px),
-        /* Shirt - blue */
-        linear-gradient(180deg, transparent 35%, #7ec8e3 35%, #7ec8e3 50%, transparent 50%),
-        /* Backpack straps visible */
-        linear-gradient(180deg, transparent 35%, var(--pink) 35%, var(--pink) 37%, transparent 37%),
-        /* Shorts */
-        linear-gradient(180deg, transparent 50%, #4a6fa5 50%, #4a6fa5 62%, transparent 62%),
-        /* Legs */
-        linear-gradient(180deg, transparent 62%, #e8b87a 62%, #e8b87a 80%, transparent 80%),
-        /* Shoes */
-        linear-gradient(180deg, transparent 80%, #d44444 80%);
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
 }
 
 #jude-name {
@@ -502,20 +440,7 @@ html, body {
     margin-top: 2px;
 }
 
-/* Walk animation */
-#jude.walking {
-    animation: judeWalk 0.3s steps(2) infinite;
-}
-
-@keyframes judeWalk {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-    100% { transform: translateY(0); }
-}
-
-#jude.facing-left #jude-sprite {
-    transform: scaleX(-1);
-}
+/* Walk animation handled by canvas sprite renderer */
 
 /* ===== WORLD OBJECTS ===== */
 .world-object {
@@ -536,9 +461,11 @@ html, body {
 }
 
 .obj-sprite {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
     position: relative;
 }
 
@@ -571,9 +498,9 @@ html, body {
 #obj-tennis { left: 2000px; }
 #obj-cricket { left: 2300px; }
 
-/* ===== PIXEL ART SPRITES ===== */
+/* Sprites are now rendered via canvas in script.js */
 
-/* Bike */
+/*
 .bike-sprite {
     background:
         /* Frame */
@@ -761,8 +688,7 @@ html, body {
         linear-gradient(0deg, transparent 0%, transparent 20%),
         radial-gradient(ellipse at 25% 90%, #d4a050 2px, transparent 2px),
         radial-gradient(ellipse at 30% 90%, #d4a050 2px, transparent 2px),
-        radial-gradient(ellipse at 35% 90%, #d4a050 2px, transparent 2px);
-}
+*/
 
 /* Interaction glow */
 .world-object.nearby {

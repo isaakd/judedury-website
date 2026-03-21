@@ -688,10 +688,58 @@
     }
 
     function renderAllIcons() {
-        document.querySelectorAll('canvas.obj-sprite[data-icon]').forEach(canvas => {
-            const key = canvas.dataset.icon;
-            if (iconData[key]) drawIcon(canvas, iconData[key]);
+        // For each sprite container, check if the PNG loaded successfully
+        // If not, fall back to canvas pixel art
+        document.querySelectorAll('.sprite-container[data-icon]').forEach(container => {
+            const key = container.dataset.icon;
+            const img = container.querySelector('.sprite-img');
+            const canvas = container.querySelector('.sprite-fallback');
+
+            if (img && img.naturalWidth > 0 && img.complete) {
+                // PNG loaded - use it
+                img.classList.remove('hidden');
+                canvas.classList.add('hidden');
+            } else {
+                // PNG failed or not available - use canvas fallback
+                img.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                if (iconData[key]) drawIcon(canvas, iconData[key]);
+            }
         });
+
+        // Also handle images that load after this function runs
+        document.querySelectorAll('.sprite-img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.classList.add('hidden');
+                const canvas = this.parentElement.querySelector('.sprite-fallback');
+                if (canvas) {
+                    canvas.classList.remove('hidden');
+                    const key = this.parentElement.dataset.icon;
+                    if (iconData[key]) drawIcon(canvas, iconData[key]);
+                }
+            });
+        });
+    }
+
+    // Handle Jude character sprite - image or canvas fallback
+    function initJudeSprite() {
+        const judeImg = document.getElementById('jude-img');
+        const judeCanvas = document.getElementById('jude-sprite');
+
+        if (judeImg) {
+            judeImg.addEventListener('error', function() {
+                // PNG not available - use canvas fallback
+                this.classList.add('hidden');
+                judeCanvas.classList.remove('hidden');
+                judeImg._useFallback = true;
+            });
+
+            if (judeImg.complete && judeImg.naturalWidth > 0) {
+                // Image loaded - use it, hide canvas
+                judeCanvas.classList.add('hidden');
+                judeImg.classList.remove('hidden');
+            }
+        }
     }
 
     // ===== DOM REFS =====
@@ -858,13 +906,47 @@
     }
 
     // ===== MUSIC (chiptune generated with Web Audio API) =====
+    // Safari/iOS requires AudioContext to be created AND resumed inside a user gesture.
+    // We unlock audio on the very first user interaction.
     function initAudio() {
-        if (audioCtx) return;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx) {
+            // Always try to resume on user gesture (Safari requires this)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return;
+        }
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Immediately resume (needed for Safari)
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            // Play a silent buffer to fully unlock audio on iOS Safari
+            const silentBuffer = audioCtx.createBuffer(1, 1, 22050);
+            const silentSource = audioCtx.createBufferSource();
+            silentSource.buffer = silentBuffer;
+            silentSource.connect(audioCtx.destination);
+            silentSource.start(0);
+        } catch (e) {
+            audioCtx = null;
+        }
     }
+
+    // Unlock audio on first touch/click (iOS Safari requirement)
+    function unlockAudio() {
+        initAudio();
+        document.removeEventListener('touchstart', unlockAudio);
+        document.removeEventListener('touchend', unlockAudio);
+        document.removeEventListener('click', unlockAudio);
+    }
+    document.addEventListener('touchstart', unlockAudio, { once: true });
+    document.addEventListener('touchend', unlockAudio, { once: true });
+    document.addEventListener('click', unlockAudio, { once: true });
 
     function playChiptune() {
         if (!audioCtx) initAudio();
+        if (!audioCtx) return; // Audio not available
         if (audioCtx.state === 'suspended') audioCtx.resume();
 
         // Simple happy melody
@@ -926,6 +1008,7 @@
         gameWorld.classList.remove('hidden');
         gameStarted = true;
         loadPhotos();
+        initJudeSprite();
         renderJude(); // Draw initial sprite
         renderAllIcons(); // Draw all world object icons
         updateCamera();
@@ -935,8 +1018,40 @@
 
     // ===== SPRITE RENDERING =====
     const spriteCanvas = document.getElementById('jude-sprite');
+    const judeImgEl = document.getElementById('jude-img');
+    let useJudeImage = false;
+
+    // Check if Jude's high-res image is available
+    if (judeImgEl) {
+        judeImgEl.addEventListener('load', () => {
+            useJudeImage = true;
+            judeImgEl.classList.remove('hidden');
+            spriteCanvas.classList.add('hidden');
+        });
+        judeImgEl.addEventListener('error', () => {
+            useJudeImage = false;
+            judeImgEl.classList.add('hidden');
+            spriteCanvas.classList.remove('hidden');
+        });
+        // Check if already loaded
+        if (judeImgEl.complete && judeImgEl.naturalWidth > 0) {
+            useJudeImage = true;
+            spriteCanvas.classList.add('hidden');
+        } else if (judeImgEl.complete) {
+            // Loaded but failed
+            useJudeImage = false;
+            judeImgEl.classList.add('hidden');
+            spriteCanvas.classList.remove('hidden');
+        }
+    }
 
     function renderJude() {
+        if (useJudeImage) {
+            // High-res image - flip via CSS transform for direction
+            judeImgEl.style.transform = facingLeft ? 'scaleX(-1)' : '';
+            return;
+        }
+        // Canvas pixel art fallback
         const frameIndex = isWalking ? walkFrame : 0;
         drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }

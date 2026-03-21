@@ -51,45 +51,73 @@
         <div id="ground">
             <!-- Interactive Objects -->
             <div class="world-object" id="obj-bike" data-name="bike" title="Jude's Bike">
-                <canvas class="obj-sprite" data-icon="bike" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="bike">
+                    <img class="obj-sprite sprite-img" src="sprites/bike.png" alt="Bike">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">BIKE</div>
             </div>
             <div class="world-object" id="obj-baseball" data-name="baseball" title="Baseball">
-                <canvas class="obj-sprite" data-icon="baseball" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="baseball">
+                    <img class="obj-sprite sprite-img" src="sprites/baseball.png" alt="Baseball">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">BASEBALL</div>
             </div>
             <div class="world-object" id="obj-beyblade" data-name="beyblade" title="Beyblade Arena">
-                <canvas class="obj-sprite" data-icon="beyblade" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="beyblade">
+                    <img class="obj-sprite sprite-img" src="sprites/beyblade.png" alt="Beyblade">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">BEYBLADE</div>
             </div>
             <div class="world-object" id="obj-dino" data-name="dino" title="Dino Land">
-                <canvas class="obj-sprite" data-icon="dino" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="dino">
+                    <img class="obj-sprite sprite-img" src="sprites/dino.png" alt="Dinos">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">DINOS</div>
             </div>
             <div class="world-object" id="obj-hotwheels" data-name="hotwheels" title="Hot Wheels">
-                <canvas class="obj-sprite" data-icon="hotwheels" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="hotwheels">
+                    <img class="obj-sprite sprite-img" src="sprites/hotwheels.png" alt="Cars">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">CARS</div>
             </div>
             <div class="world-object" id="obj-lego" data-name="lego" title="Lego Workshop">
-                <canvas class="obj-sprite" data-icon="lego" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="lego">
+                    <img class="obj-sprite sprite-img" src="sprites/lego.png" alt="Lego">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">LEGO</div>
             </div>
             <div class="world-object" id="obj-gallery" data-name="gallery" title="Photo Gallery">
-                <canvas class="obj-sprite" data-icon="gallery" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="gallery">
+                    <img class="obj-sprite sprite-img" src="sprites/gallery.png" alt="Photos">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">PHOTOS</div>
             </div>
             <div class="world-object" id="obj-tennis" data-name="tennis" title="Tennis">
-                <canvas class="obj-sprite" data-icon="tennis" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="tennis">
+                    <img class="obj-sprite sprite-img" src="sprites/tennis.png" alt="Tennis">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">TENNIS</div>
             </div>
             <div class="world-object" id="obj-cricket" data-name="cricket" title="Cricket">
-                <canvas class="obj-sprite" data-icon="cricket" width="144" height="144"></canvas>
+                <div class="sprite-container" data-icon="cricket">
+                    <img class="obj-sprite sprite-img" src="sprites/cricket.png" alt="Cricket">
+                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
+                </div>
                 <div class="obj-label">CRICKET</div>
             </div>
 
             <!-- Jude Character -->
             <div id="jude">
-                <canvas id="jude-sprite" width="128" height="160"></canvas>
+                <img id="jude-img" class="jude-sprite" src="sprites/jude.png" alt="Jude">
+                <canvas id="jude-sprite" class="jude-sprite hidden" width="128" height="160"></canvas>
                 <div id="jude-name">JUDE</div>
             </div>
 

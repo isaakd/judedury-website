@@ -659,9 +659,15 @@ html, body {
     filter: drop-shadow(2px 3px 2px rgba(30, 50, 20, 0.3));
 }
 
-#jude-sprite {
+.jude-sprite {
     width: 128px;
     height: 160px;
+    image-rendering: auto;
+    object-fit: contain;
+    display: block;
+}
+
+#jude-sprite {
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
@@ -695,13 +701,34 @@ html, body {
     transform: translateX(-50%) translateY(-5px);
 }
 
+.sprite-container {
+    width: 144px;
+    height: 144px;
+    position: relative;
+}
+
 .obj-sprite {
     width: 144px;
     height: 144px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
-    position: relative;
+    object-fit: contain;
+}
+
+.sprite-img {
+    display: block;
+}
+
+/* High-res sprites don't need pixelated rendering */
+.sprite-img:not(.pixel-art) {
+    image-rendering: auto;
+}
+
+.sprite-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 .obj-label {
@@ -1199,12 +1226,13 @@ html, body {
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 600px) {
+    .sprite-container,
     .world-object .obj-sprite {
         width: 96px;
         height: 96px;
     }
 
-    #jude-sprite {
+    .jude-sprite {
         width: 80px;
         height: 100px;
     }

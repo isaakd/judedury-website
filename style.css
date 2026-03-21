@@ -424,8 +424,8 @@ html, body {
 }
 
 #jude-sprite {
-    width: 96px;
-    height: 128px;
+    width: 128px;
+    height: 160px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
@@ -461,8 +461,8 @@ html, body {
 }
 
 .obj-sprite {
-    width: 64px;
-    height: 64px;
+    width: 128px;
+    height: 128px;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
@@ -498,197 +498,7 @@ html, body {
 #obj-tennis { left: 2000px; }
 #obj-cricket { left: 2300px; }
 
-/* Sprites are now rendered via canvas in script.js */
-
-/*
-.bike-sprite {
-    background:
-        /* Frame */
-        radial-gradient(circle at 50% 40%, #e74c3c 4px, transparent 4px),
-        /* Wheels */
-        radial-gradient(circle at 25% 70%, transparent 8px, #333 8px, #333 11px, transparent 11px),
-        radial-gradient(circle at 75% 70%, transparent 8px, #333 8px, #333 11px, transparent 11px),
-        /* Spokes center */
-        radial-gradient(circle at 25% 70%, #888 2px, transparent 2px),
-        radial-gradient(circle at 75% 70%, #888 2px, transparent 2px),
-        /* Handlebars */
-        radial-gradient(circle at 70% 25%, #666 4px, transparent 4px),
-        /* Seat */
-        radial-gradient(ellipse at 35% 30%, #333 5px, transparent 5px),
-        /* Frame bars */
-        linear-gradient(45deg, transparent 40%, #e74c3c 40%, #e74c3c 43%, transparent 43%),
-        linear-gradient(-15deg, transparent 35%, #e74c3c 35%, #e74c3c 38%, transparent 38%),
-        /* Pedal */
-        radial-gradient(circle at 50% 65%, #888 3px, transparent 3px);
-}
-
-/* Baseball */
-.baseball-sprite {
-    background:
-        /* Ball */
-        radial-gradient(circle at 50% 35%, #fff 12px, transparent 12px),
-        radial-gradient(circle at 50% 35%, #e74c3c 13px, transparent 13px),
-        /* Stitching */
-        radial-gradient(circle at 43% 30%, #e74c3c 1px, transparent 1px),
-        radial-gradient(circle at 57% 30%, #e74c3c 1px, transparent 1px),
-        radial-gradient(circle at 43% 40%, #e74c3c 1px, transparent 1px),
-        radial-gradient(circle at 57% 40%, #e74c3c 1px, transparent 1px),
-        /* Bat */
-        linear-gradient(135deg, transparent 20%, #8B6914 20%, #8B6914 24%, transparent 24%),
-        linear-gradient(135deg, transparent 50%, #a0782a 50%, #a0782a 54%, transparent 54%),
-        /* Glove */
-        radial-gradient(circle at 25% 75%, #8B4513 14px, transparent 14px),
-        radial-gradient(circle at 25% 75%, #a0562a 10px, transparent 10px);
-}
-
-/* Beyblade */
-.beyblade-sprite {
-    background:
-        /* Arena ring */
-        radial-gradient(circle at 50% 50%, transparent 18px, #888 18px, #888 22px, transparent 22px),
-        /* Beyblade spinning */
-        radial-gradient(circle at 50% 50%, var(--gold) 4px, transparent 4px),
-        radial-gradient(circle at 50% 50%, #3498db 8px, transparent 8px),
-        radial-gradient(circle at 50% 50%, transparent 10px, #e74c3c 10px, #e74c3c 14px, transparent 14px),
-        /* Sparks */
-        radial-gradient(circle at 30% 35%, #ffd700 2px, transparent 2px),
-        radial-gradient(circle at 70% 65%, #ffd700 2px, transparent 2px),
-        radial-gradient(circle at 65% 30%, #ff6348 1.5px, transparent 1.5px);
-    animation: beySpin 1s linear infinite;
-}
-
-@keyframes beySpin {
-    from { filter: hue-rotate(0deg); }
-    to { filter: hue-rotate(360deg); }
-}
-
-/* Dinosaur */
-.dino-sprite {
-    background:
-        /* Body */
-        radial-gradient(ellipse at 55% 55%, #27ae60 14px, transparent 14px),
-        /* Head */
-        radial-gradient(ellipse at 75% 35%, #2ecc71 10px, transparent 10px),
-        /* Eye */
-        radial-gradient(circle at 80% 32%, #fff 3px, transparent 3px),
-        radial-gradient(circle at 81% 32%, #333 1.5px, transparent 1.5px),
-        /* Mouth */
-        radial-gradient(ellipse at 88% 38%, #e74c3c 3px, transparent 3px),
-        /* Spikes */
-        radial-gradient(circle at 55% 38%, #1a8a4a 4px, transparent 4px),
-        radial-gradient(circle at 48% 40%, #1a8a4a 3px, transparent 3px),
-        radial-gradient(circle at 62% 38%, #1a8a4a 3px, transparent 3px),
-        /* Legs */
-        radial-gradient(ellipse at 40% 80%, #27ae60 6px, transparent 6px),
-        radial-gradient(ellipse at 65% 80%, #27ae60 6px, transparent 6px),
-        /* Tail */
-        radial-gradient(ellipse at 25% 55%, #27ae60 8px, transparent 8px),
-        radial-gradient(ellipse at 15% 50%, #2ecc71 5px, transparent 5px);
-}
-
-/* Hot Wheels */
-.hotwheels-sprite {
-    background:
-        /* Car body */
-        radial-gradient(ellipse at 50% 45%, #e74c3c 16px, transparent 16px),
-        /* Windshield */
-        radial-gradient(ellipse at 55% 35%, #74b9ff 6px, transparent 6px),
-        /* Roof scoop */
-        radial-gradient(ellipse at 45% 30%, #c0392b 4px, transparent 4px),
-        /* Wheels */
-        radial-gradient(circle at 30% 65%, #333 7px, transparent 7px),
-        radial-gradient(circle at 70% 65%, #333 7px, transparent 7px),
-        /* Wheel centers */
-        radial-gradient(circle at 30% 65%, #888 3px, transparent 3px),
-        radial-gradient(circle at 70% 65%, #888 3px, transparent 3px),
-        /* Flame decal */
-        radial-gradient(ellipse at 25% 45%, #f39c12 5px, transparent 5px),
-        radial-gradient(ellipse at 20% 45%, #e67e22 4px, transparent 4px),
-        /* Speed lines */
-        linear-gradient(0deg, transparent 43%, rgba(255,255,255,0.3) 43%, rgba(255,255,255,0.3) 45%, transparent 45%);
-}
-
-/* Lego */
-.lego-sprite {
-    background:
-        /* Bottom brick - red */
-        linear-gradient(0deg, transparent 55%, #e74c3c 55%, #e74c3c 80%, transparent 80%),
-        /* Top brick - blue */
-        linear-gradient(0deg, transparent 25%, #3498db 25%, #3498db 55%, transparent 55%),
-        /* Side brick - yellow */
-        linear-gradient(0deg, transparent 55%, #f1c40f 55%, #f1c40f 80%, transparent 80%),
-        /* Studs - bottom */
-        radial-gradient(circle at 35% 60%, #ff6b6b 4px, transparent 4px),
-        radial-gradient(circle at 55% 60%, #ff6b6b 4px, transparent 4px),
-        radial-gradient(circle at 75% 60%, #ff6b6b 4px, transparent 4px),
-        /* Studs - top */
-        radial-gradient(circle at 35% 32%, #5dade2 4px, transparent 4px),
-        radial-gradient(circle at 55% 32%, #5dade2 4px, transparent 4px),
-        /* Mini figure head */
-        radial-gradient(circle at 80% 15%, #f1c40f 6px, transparent 6px),
-        radial-gradient(circle at 78% 13%, #333 1.5px, transparent 1.5px),
-        radial-gradient(circle at 83% 13%, #333 1.5px, transparent 1.5px);
-}
-
-/* Gallery */
-.gallery-sprite {
-    background:
-        /* Camera body */
-        radial-gradient(ellipse at 50% 50%, #555 16px, transparent 16px),
-        /* Lens */
-        radial-gradient(circle at 50% 55%, #222 10px, transparent 10px),
-        radial-gradient(circle at 50% 55%, #3498db 7px, transparent 7px),
-        radial-gradient(circle at 50% 55%, #5dade2 4px, transparent 4px),
-        radial-gradient(circle at 48% 53%, #fff 2px, transparent 2px),
-        /* Flash */
-        radial-gradient(circle at 70% 35%, #f1c40f 4px, transparent 4px),
-        /* Viewfinder */
-        radial-gradient(ellipse at 50% 35%, #444 6px, transparent 6px),
-        /* Flash burst */
-        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.5) 6px, transparent 6px);
-    animation: cameraFlash 3s ease-in-out infinite;
-}
-
-@keyframes cameraFlash {
-    0%, 85%, 100% { filter: brightness(1); }
-    90% { filter: brightness(1.5); }
-}
-
-/* Tennis */
-.tennis-sprite {
-    background:
-        /* Racket head */
-        radial-gradient(ellipse at 50% 35%, transparent 10px, #2ecc71 10px, #2ecc71 14px, transparent 14px),
-        /* Strings */
-        linear-gradient(0deg, transparent 22%, rgba(255,255,255,0.4) 22%, rgba(255,255,255,0.4) 23%, transparent 23%,
-            transparent 28%, rgba(255,255,255,0.4) 28%, rgba(255,255,255,0.4) 29%, transparent 29%,
-            transparent 34%, rgba(255,255,255,0.4) 34%, rgba(255,255,255,0.4) 35%, transparent 35%,
-            transparent 40%, rgba(255,255,255,0.4) 40%, rgba(255,255,255,0.4) 41%, transparent 41%),
-        /* Handle */
-        linear-gradient(0deg, transparent 50%, #8B4513 50%, #8B4513 55%, transparent 55%),
-        linear-gradient(0deg, transparent 55%, #a0562a 55%, #a0562a 80%, transparent 80%),
-        /* Ball */
-        radial-gradient(circle at 75% 65%, #c8e613 8px, transparent 8px),
-        radial-gradient(circle at 75% 65%, #a8c610 9px, transparent 9px);
-}
-
-/* Cricket */
-.cricket-sprite {
-    background:
-        /* Bat blade */
-        linear-gradient(5deg, transparent 15%, #d4a050 15%, #d4a050 22%, transparent 22%),
-        linear-gradient(5deg, transparent 20%, #c49040 20%, #c49040 70%, transparent 70%),
-        /* Bat handle */
-        linear-gradient(5deg, transparent 70%, #8B4513 70%, #8B4513 90%, transparent 90%),
-        /* Ball */
-        radial-gradient(circle at 70% 30%, #cc0000 8px, transparent 8px),
-        /* Ball seam */
-        radial-gradient(circle at 70% 30%, transparent 5px, rgba(255,255,255,0.4) 5px, rgba(255,255,255,0.4) 6px, transparent 6px),
-        /* Stumps */
-        linear-gradient(0deg, transparent 0%, transparent 20%),
-        radial-gradient(ellipse at 25% 90%, #d4a050 2px, transparent 2px),
-        radial-gradient(ellipse at 30% 90%, #d4a050 2px, transparent 2px),
-*/
+/* Sprites rendered via canvas in script.js */
 
 /* Interaction glow */
 .world-object.nearby {

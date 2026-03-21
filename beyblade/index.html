@@ -121,12 +121,34 @@
     display: none;
   }
   #next-level-btn:active { background: #fc4; }
+  #exit-btn {
+    position: absolute;
+    top: 42px;
+    left: 8px;
+    pointer-events: all;
+    background: rgba(0,0,0,0.6);
+    color: #e33;
+    border: 2px solid #e33;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  #exit-btn:active { background: #e33; color: #fff; }
+  #exit-btn.visible { display: flex; }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <div id="ui-overlay">
   <button id="rip-btn">RIP IT!</button>
+  <button id="exit-btn">&#10005;</button>
   <div id="controls">
     <div class="blank"></div>
     <button class="arrow-btn" data-dir="up">&#9650;</button>
@@ -372,6 +394,7 @@ const controls = document.getElementById('controls');
 const messageEl = document.getElementById('message');
 const restartBtn = document.getElementById('restart-btn');
 const nextLevelBtn = document.getElementById('next-level-btn');
+const exitBtn = document.getElementById('exit-btn');
 
 // ===== SCATTER NUMBERS =====
 function scatterNumbers() {
@@ -404,6 +427,7 @@ function startGame(nextLevel) {
   state = 'spinning';
   ripBtn.classList.add('hidden');
   controls.classList.add('visible');
+  exitBtn.classList.add('visible');
   restartBtn.style.display = 'none';
   nextLevelBtn.style.display = 'none';
   messageEl.classList.remove('show');
@@ -423,9 +447,22 @@ function startGame(nextLevel) {
   scatterNumbers();
 }
 
+function goHome() {
+  state = 'ready';
+  ripBtn.classList.remove('hidden');
+  controls.classList.remove('visible');
+  exitBtn.classList.remove('visible');
+  restartBtn.style.display = 'none';
+  nextLevelBtn.style.display = 'none';
+  messageEl.classList.remove('show');
+  pendingResult = null;
+  pendingTimer = 0;
+}
+
 ripBtn.addEventListener('click', () => { level = 1; startGame(); });
 restartBtn.addEventListener('click', () => startGame());
 nextLevelBtn.addEventListener('click', () => startGame(true));
+exitBtn.addEventListener('click', goHome);
 
 // ===== CONTROLS =====
 let pressing = { up: false, down: false, left: false, right: false };

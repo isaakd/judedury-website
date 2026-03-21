@@ -829,6 +829,22 @@
     // Sound
     soundBtn.addEventListener('click', toggleMusic);
 
+    // Home button - back to title screen
+    const homeBtn = document.getElementById('home-btn');
+    homeBtn.addEventListener('click', () => {
+        gameStarted = false;
+        musicPlaying = false;
+        soundBtn.textContent = '♫';
+        gameWorld.classList.add('hidden');
+        titleScreen.classList.remove('hidden');
+        speechBubble.classList.add('hidden');
+        closeAllModals();
+        // Reset position
+        judeX = 100;
+        cameraX = 0;
+        keys = {};
+    });
+
     // Gallery button in HUD
     galleryBtn.addEventListener('click', openGallery);
 

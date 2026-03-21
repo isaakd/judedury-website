@@ -4,7 +4,7 @@
     'use strict';
 
     // ===== CONFIG =====
-    const WORLD_WIDTH = 3200;
+    const WORLD_WIDTH = 3500;
     const MOVE_SPEED = 4;
     const INTERACTION_DISTANCE = 80;
     const SPRITE_SCALE = 4; // each pixel in our sprite grid = 4px on canvas
@@ -825,13 +825,7 @@
         },
         lego: {
             title: '🧱 LEGO WORKSHOP',
-            body: `<div class="info-emoji">🧱</div>
-                <ul class="info-facts">
-                    <li>Master builder at work!</li>
-                    <li>If you can dream it, you can build it</li>
-                    <li>Step on one... you'll remember forever</li>
-                    <li>Jude builds worlds brick by brick</li>
-                </ul>`
+            body: 'lego-gallery'
         },
         gallery: {
             title: '📷 PHOTO GALLERY',
@@ -856,6 +850,16 @@
                     <li>Six runs over the boundary? No problem!</li>
                     <li>It's just not cricket without Jude</li>
                 </ul>`
+        },
+        movies: {
+            title: '🎬 MOVIES',
+            body: `<div class="info-emoji">🎬</div>
+                <ul class="info-facts">
+                    <li>Movie night is the BEST night</li>
+                    <li>Popcorn + couch = perfect combo</li>
+                    <li>Studio Ghibli films are top tier</li>
+                    <li>Jude's movie reviews: everything is awesome!</li>
+                </ul>`
         }
     };
 
@@ -864,32 +868,41 @@
     // Add .jpg, .png, or .gif files to photos/ and list them in photos/index.json
     let photos = [];
     let currentPhotoIndex = 0;
+    let activeGalleryFolder = 'photos';
+    let activeGalleryPhotos = [];
 
-    async function loadPhotos() {
+    async function loadPhotosFrom(folder) {
+        let loaded = [];
         try {
-            const response = await fetch('photos/index.json');
+            const response = await fetch(folder + '/index.json');
             if (response.ok) {
                 const data = await response.json();
-                photos = data.photos || [];
+                loaded = data.photos || [];
             }
         } catch (e) {
-            // No photos yet - that's ok!
-            photos = [];
+            loaded = [];
         }
-        renderGallery();
+        return loaded;
     }
 
-    function renderGallery() {
+    async function loadPhotos() {
+        photos = await loadPhotosFrom('photos');
+        renderGallery('photos', photos);
+    }
+
+    function renderGallery(folder, photoList) {
+        activeGalleryFolder = folder;
+        activeGalleryPhotos = photoList;
         galleryGrid.innerHTML = '';
-        if (photos.length === 0) {
+        if (photoList.length === 0) {
             galleryEmpty.style.display = 'block';
             return;
         }
         galleryEmpty.style.display = 'none';
-        photos.forEach((photo, i) => {
+        photoList.forEach((photo, i) => {
             const item = document.createElement('div');
             item.className = 'gallery-item';
-            item.innerHTML = `<img src="photos/${photo}" alt="Jude's photo" loading="lazy">`;
+            item.innerHTML = `<img src="${folder}/${photo}" alt="Jude's photo" loading="lazy">`;
             item.addEventListener('click', () => openLightbox(i));
             galleryGrid.appendChild(item);
         });
@@ -897,7 +910,7 @@
 
     function openLightbox(index) {
         currentPhotoIndex = index;
-        lightboxImg.src = `photos/${photos[index]}`;
+        lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[index]}`;
         lightbox.classList.remove('hidden');
     }
 
@@ -1011,9 +1024,25 @@
         initJudeSprite();
         renderJude(); // Draw initial sprite
         renderAllIcons(); // Draw all world object icons
+        checkEnvSprites(); // Fallback to CSS if env sprites missing
         updateCamera();
-        showSpeech("Hi! I'm JUDE! Use ← → arrow keys to explore my world. Walk up to things and press SPACE or ENTER!");
+        showSpeech("Hi! I'm JUDE! Use \u2190 \u2192 arrow keys to explore my world. Walk up to things and press SPACE or ENTER!");
         gameLoop();
+    }
+
+    // Check if environment sprite images exist, fallback to CSS art if not
+    function checkEnvSprites() {
+        document.querySelectorAll('.tree, .game-cloud').forEach(el => {
+            const style = getComputedStyle(el);
+            const bgImage = style.backgroundImage;
+            if (bgImage && bgImage !== 'none') {
+                const url = bgImage.replace(/url\(["']?/, '').replace(/["']?\)/, '');
+                const img = new Image();
+                img.onload = () => { /* sprite loaded OK */ };
+                img.onerror = () => { el.classList.add('css-fallback'); };
+                img.src = url;
+            }
+        });
     }
 
     // ===== SPRITE RENDERING =====
@@ -1134,6 +1163,8 @@
             if (info) {
                 if (info.body === 'gallery') {
                     openGallery();
+                } else if (info.body === 'lego-gallery') {
+                    openLegoGallery();
                 } else {
                     openInfo(info.title, info.body);
                 }
@@ -1254,8 +1285,19 @@
         speechBubble.classList.add('hidden');
     }
 
+    const galleryTitle = galleryModal.querySelector('.modal-header h2');
+
     function openGallery() {
+        galleryTitle.innerHTML = '&#128247; JUDE\'S PHOTOS';
         loadPhotos();
+        galleryModal.classList.remove('hidden');
+        speechBubble.classList.add('hidden');
+    }
+
+    async function openLegoGallery() {
+        galleryTitle.innerHTML = '&#129521; LEGO WORKSHOP';
+        const legoPhotos = await loadPhotosFrom('lego');
+        renderGallery('lego', legoPhotos);
         galleryModal.classList.remove('hidden');
         speechBubble.classList.add('hidden');
     }
@@ -1337,6 +1379,8 @@
             if (info) {
                 if (info.body === 'gallery') {
                     openGallery();
+                } else if (info.body === 'lego-gallery') {
+                    openLegoGallery();
                 } else {
                     openInfo(info.title, info.body);
                 }
@@ -1388,18 +1432,42 @@
         if (e.target === lightbox) closeLightbox();
     });
     lightboxPrev.addEventListener('click', () => {
-        currentPhotoIndex = (currentPhotoIndex - 1 + photos.length) % photos.length;
-        lightboxImg.src = `photos/${photos[currentPhotoIndex]}`;
+        currentPhotoIndex = (currentPhotoIndex - 1 + activeGalleryPhotos.length) % activeGalleryPhotos.length;
+        lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[currentPhotoIndex]}`;
     });
     lightboxNext.addEventListener('click', () => {
-        currentPhotoIndex = (currentPhotoIndex + 1) % photos.length;
-        lightboxImg.src = `photos/${photos[currentPhotoIndex]}`;
+        currentPhotoIndex = (currentPhotoIndex + 1) % activeGalleryPhotos.length;
+        lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[currentPhotoIndex]}`;
     });
 
     // Resize
     window.addEventListener('resize', () => {
         viewportWidth = window.innerWidth;
     });
+
+    // Arrow keys for lightbox navigation
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('hidden')) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                currentPhotoIndex = (currentPhotoIndex - 1 + activeGalleryPhotos.length) % activeGalleryPhotos.length;
+                lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[currentPhotoIndex]}`;
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                currentPhotoIndex = (currentPhotoIndex + 1) % activeGalleryPhotos.length;
+                lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[currentPhotoIndex]}`;
+            } else if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        }
+    });
+
+    // Auto-start if returning from a sub-page (e.g. beyblade)
+    if (window.location.hash === '#game') {
+        initAudio();
+        startGame();
+        history.replaceState(null, '', window.location.pathname);
+    }
 
     // Prevent scrolling
     document.addEventListener('touchmove', (e) => {

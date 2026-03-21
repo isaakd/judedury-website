@@ -23,11 +23,21 @@
     top: 0; left: 0; right: 0; bottom: 0;
     pointer-events: none;
   }
-  #rip-btn {
+  #title-buttons {
     position: absolute;
-    top: 55%;
+    bottom: 12%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: all;
+    width: 90%;
+    max-width: 320px;
+  }
+  #title-buttons.hidden { display: none; }
+  #rip-btn {
     pointer-events: all;
     background: #e03040;
     color: #fff;
@@ -42,7 +52,6 @@
     image-rendering: pixelated;
   }
   #rip-btn:active { background: #ff5060; }
-  #rip-btn.hidden { display: none; }
   #controls {
     position: absolute;
     bottom: 10px;
@@ -164,10 +173,6 @@
   }
   #home-btn:hover { background: #5af; color: #000; }
   #highscores-btn {
-    position: absolute;
-    top: 62%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     pointer-events: all;
     background: #112;
     color: #5af;
@@ -182,7 +187,6 @@
     image-rendering: pixelated;
   }
   #highscores-btn:active { background: #5af; color: #000; }
-  #highscores-btn.hidden { display: none; }
   #hs-overlay {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -224,8 +228,12 @@
     color: #667;
     letter-spacing: 2px;
   }
-  #hs-overlay .hs-close {
+  #hs-overlay .hs-buttons {
     margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  #hs-overlay .hs-btn {
     background: #223;
     color: #5af;
     border: 2px solid #5af;
@@ -236,7 +244,17 @@
     cursor: pointer;
     letter-spacing: 2px;
   }
-  #hs-overlay .hs-close:active { background: #5af; color: #000; }
+  #hs-overlay .hs-btn:active { background: #5af; color: #000; }
+  #hs-overlay .hs-btn-new {
+    color: #4f4;
+    border-color: #4f4;
+  }
+  #hs-overlay .hs-btn-new:active { background: #4f4; color: #000; }
+  #hs-overlay .hs-btn-exit {
+    color: #f55;
+    border-color: #f55;
+  }
+  #hs-overlay .hs-btn-exit:active { background: #f55; color: #000; }
   /* Initials entry overlay */
   #initials-overlay {
     position: absolute;
@@ -337,10 +355,12 @@
 </head>
 <body>
 <canvas id="game"></canvas>
-<a id="home-btn" href="../">&#9751; HOME</a>
+<a id="home-btn" href="../#game">&#9751; HOME</a>
 <div id="ui-overlay">
-  <button id="rip-btn">RIP IT!</button>
-  <button id="highscores-btn" class="">HIGH SCORES</button>
+  <div id="title-buttons">
+    <button id="rip-btn">RIP IT!</button>
+    <button id="highscores-btn">HIGH SCORES</button>
+  </div>
   <button id="exit-btn">&#10005;</button>
   <div id="controls">
     <div class="blank"></div>
@@ -361,7 +381,10 @@
 <div id="hs-overlay">
   <div class="hs-title">HIGH SCORES</div>
   <div class="hs-table" id="hs-table-body"></div>
-  <button class="hs-close" id="hs-close-btn">BACK</button>
+  <div class="hs-buttons">
+    <button class="hs-btn hs-btn-new" id="hs-newgame-btn">NEW GAME</button>
+    <button class="hs-btn hs-btn-exit" id="hs-exit-btn">EXIT GAME</button>
+  </div>
 </div>
 
 <div id="initials-overlay">
@@ -600,6 +623,9 @@ let level = 1;
 let pendingResult = null; // 'won' or 'lost'
 let pendingTimer = 0;
 const PENDING_DELAY = 60; // ~1 second at 60fps
+let gameStartTime = 0;    // timestamp when run started
+let levelStartTime = 0;   // timestamp when current level started
+let totalTimeSecs = 0;     // cumulative seconds across levels
 
 // Level settings - gets harder each level
 function getLevelSettings(lvl) {
@@ -616,6 +642,7 @@ function getLevelSettings(lvl) {
 }
 
 const ripBtn = document.getElementById('rip-btn');
+const titleButtons = document.getElementById('title-buttons');
 const controls = document.getElementById('controls');
 const messageEl = document.getElementById('message');
 const restartBtn = document.getElementById('restart-btn');
@@ -624,7 +651,8 @@ const exitBtn = document.getElementById('exit-btn');
 const highscoresBtn = document.getElementById('highscores-btn');
 const hsOverlay = document.getElementById('hs-overlay');
 const hsTableBody = document.getElementById('hs-table-body');
-const hsCloseBtn = document.getElementById('hs-close-btn');
+const hsNewGameBtn = document.getElementById('hs-newgame-btn');
+const hsExitBtn = document.getElementById('hs-exit-btn');
 const initialsOverlay = document.getElementById('initials-overlay');
 const initScoreInfo = document.getElementById('init-score-info');
 const initOkBtn = document.getElementById('init-ok-btn');
@@ -656,10 +684,18 @@ function scatterNumbers() {
 
 // ===== START GAME =====
 function startGame(nextLevel) {
-  if (nextLevel) level++;
+  if (nextLevel) {
+    // Bank time from completed level before advancing
+    totalTimeSecs += Math.floor((Date.now() - levelStartTime) / 1000);
+    level++;
+  } else {
+    // Fresh run
+    totalTimeSecs = 0;
+    gameStartTime = Date.now();
+  }
+  levelStartTime = Date.now();
   state = 'spinning';
-  ripBtn.classList.add('hidden');
-  highscoresBtn.classList.add('hidden');
+  titleButtons.classList.add('hidden');
   controls.classList.add('visible');
   exitBtn.classList.add('visible');
   restartBtn.style.display = 'none';
@@ -685,8 +721,7 @@ function startGame(nextLevel) {
 
 function goHome() {
   state = 'ready';
-  ripBtn.classList.remove('hidden');
-  highscoresBtn.classList.remove('hidden');
+  titleButtons.classList.remove('hidden');
   controls.classList.remove('visible');
   exitBtn.classList.remove('visible');
   restartBtn.style.display = 'none';
@@ -701,7 +736,17 @@ function goHome() {
 ripBtn.addEventListener('click', () => { level = 1; startGame(); });
 restartBtn.addEventListener('click', () => startGame());
 nextLevelBtn.addEventListener('click', () => startGame(true));
-exitBtn.addEventListener('click', goHome);
+exitBtn.addEventListener('click', () => {
+  // Check for high score when exiting mid-game
+  if (state === 'spinning' || state === 'won' || state === 'lost') {
+    if (!checkHighScoreOnExit()) {
+      goHome();
+    }
+    // If checkHighScoreOnExit showed initials entry, goHome will happen after
+  } else {
+    goHome();
+  }
+});
 
 // ===== HIGH SCORES SYSTEM =====
 const HS_KEY = 'beyblade-highscores';
@@ -710,8 +755,9 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 let initialsLetters = [0, 0, 0]; // index into ALPHABET
 let initialsActiveSlot = 0;
+let pendingScoreValue = 0;
 let pendingScoreLevel = 0;
-let pendingScoreWon = false;
+let pendingScoreTime = 0;
 let hsHighlightIndex = -1; // which row to highlight as new
 
 function getHighScores() {
@@ -726,23 +772,35 @@ function saveHighScores(scores) {
   localStorage.setItem(HS_KEY, JSON.stringify(scores));
 }
 
-function qualifiesForHighScore(lvl) {
-  const scores = getHighScores();
-  if (scores.length < HS_MAX) return true;
-  return lvl > scores[scores.length - 1].score;
+function calcScore(lvl, timeSecs) {
+  // Score = level points + time bonus (faster = more bonus)
+  const levelPts = lvl * 1000;
+  const timeBonus = Math.max(0, 3000 - timeSecs * 10); // up to 3000 bonus, lose 10 per second
+  return levelPts + timeBonus;
 }
 
-function addHighScore(initials, score) {
+function qualifiesForHighScore(score) {
+  const scores = getHighScores();
+  if (scores.length < HS_MAX) return true;
+  return score > scores[scores.length - 1].score;
+}
+
+function addHighScore(initials, score, lvl, timeSecs) {
   const scores = getHighScores();
   const now = new Date();
   const dateStr = (now.getMonth()+1) + '/' + now.getDate() + '/' + (now.getFullYear() % 100);
-  const entry = { initials: initials.toUpperCase(), score, date: dateStr };
+  const entry = { initials: initials.toUpperCase(), score, level: lvl, time: timeSecs, date: dateStr };
   scores.push(entry);
   scores.sort((a, b) => b.score - a.score);
   if (scores.length > HS_MAX) scores.length = HS_MAX;
   saveHighScores(scores);
-  // Return the index of the newly inserted entry
   return scores.findIndex(s => s === entry);
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return String(m).padStart(2,' ') + ':' + String(s).padStart(2,'0');
 }
 
 function renderHighScoresTable(highlightIdx) {
@@ -752,14 +810,15 @@ function renderHighScoresTable(highlightIdx) {
     return;
   }
   let html = '';
-  const header = ' RK  INI  LVL   DATE\n' + ' --  ---  ---  ------\n';
+  const header = ' RK  INI  SCORE  LV  TIME\n' + ' --  ---  -----  --  -----\n';
   html += header;
   scores.forEach((s, i) => {
     const rank = String(i + 1).padStart(2, ' ');
     const ini = s.initials.padEnd(3, ' ');
-    const lvl = String(s.score).padStart(3, ' ');
-    const dt = (s.date || '---').padStart(6, ' ');
-    const row = ' ' + rank + '  ' + ini + '  ' + lvl + '  ' + dt;
+    const sc = String(s.score).padStart(5, ' ');
+    const lv = String(s.level || '?').padStart(2, ' ');
+    const tm = s.time !== undefined ? formatTime(s.time) : '  ---';
+    const row = ' ' + rank + '  ' + ini + '  ' + sc + '  ' + lv + '  ' + tm;
     if (i === highlightIdx) {
       html += '<span class="hs-row-new">' + row + '</span>\n';
     } else {
@@ -780,17 +839,15 @@ function hideHighScoresOverlay() {
   hsHighlightIndex = -1;
 }
 
-function showInitialsEntry(lvl, won) {
+function showInitialsEntry(score, lvl, timeSecs) {
+  pendingScoreValue = score;
   pendingScoreLevel = lvl;
-  pendingScoreWon = won;
+  pendingScoreTime = timeSecs;
   initialsLetters = [0, 0, 0];
   initialsActiveSlot = 0;
   updateInitialsDisplay();
-  initScoreInfo.textContent = 'LEVEL ' + lvl + (won ? ' COMPLETE' : ' REACHED');
+  initScoreInfo.textContent = 'SCORE: ' + score + '  LV' + lvl + '  ' + formatTime(timeSecs);
   initialsOverlay.classList.add('show');
-  // Hide game-over buttons while entering initials
-  restartBtn.style.display = 'none';
-  nextLevelBtn.style.display = 'none';
 }
 
 function hideInitialsEntry() {
@@ -814,11 +871,9 @@ function cycleInitialLetter(slot, dir) {
 
 function confirmInitials() {
   const initials = initialsLetters.map(i => ALPHABET[i]).join('');
-  const idx = addHighScore(initials, pendingScoreLevel);
+  const idx = addHighScore(initials, pendingScoreValue, pendingScoreLevel, pendingScoreTime);
   hideInitialsEntry();
-  // Show the leaderboard with the new entry highlighted
   showHighScoresOverlay(idx);
-  // After closing the leaderboard, restore the game-over buttons
 }
 
 // Initials overlay button events
@@ -842,7 +897,7 @@ document.addEventListener('keydown', (e) => {
       return;
     }
     if (hsOverlay.classList.contains('show')) {
-      hsCloseBtn.click();
+      hsNewGameBtn.click();
       e.preventDefault();
       return;
     }
@@ -890,22 +945,29 @@ highscoresBtn.addEventListener('click', () => {
   showHighScoresOverlay();
 });
 
-// Close leaderboard
-hsCloseBtn.addEventListener('click', () => {
+// High scores overlay buttons
+hsNewGameBtn.addEventListener('click', () => {
   hideHighScoresOverlay();
-  // Restore game-over buttons if we came from initials entry
-  if (state === 'won') {
-    nextLevelBtn.style.display = 'block';
-  } else if (state === 'lost') {
-    restartBtn.style.display = 'block';
-  }
+  goHome();
+  level = 1;
+  startGame(false);
 });
 
-// Hook into game over: called when pendingTimer reaches 0
-function onGameOver(won, lvl) {
-  if (qualifiesForHighScore(lvl)) {
-    showInitialsEntry(lvl, won);
+hsExitBtn.addEventListener('click', () => {
+  hideHighScoresOverlay();
+  goHome();
+});
+
+// Check high score on game exit (not per-level)
+function checkHighScoreOnExit() {
+  // Bank time from current/last level
+  const finalTime = totalTimeSecs + Math.floor((Date.now() - levelStartTime) / 1000);
+  const score = calcScore(level, finalTime);
+  if (qualifiesForHighScore(score)) {
+    showInitialsEntry(score, level, finalTime);
+    return true; // showing initials entry
   }
+  return false;
 }
 
 // ===== CONTROLS =====
@@ -1097,9 +1159,7 @@ function loop() {
 
     // Spinning blade preview
     const bladeFrame = Math.floor(frameCount / 3) % BLADE_FRAMES.length;
-    drawBlade8bit(Math.floor(W/2), H - 60, bladeFrame, true);
-
-    drawText('PRESS RIP IT TO START!', Math.floor(W/2) - 63, H - 35, '#fff');
+    drawBlade8bit(Math.floor(W/2), H - 75, bladeFrame, true);
     return;
   }
 
@@ -1206,12 +1266,13 @@ function loop() {
           nextLevelBtn.style.display = 'block';
           restartBtn.style.display = 'none';
         } else {
-          restartBtn.style.display = 'block';
+          // Game over on loss - check high score
+          if (!checkHighScoreOnExit()) {
+            restartBtn.style.display = 'block';
+          }
           nextLevelBtn.style.display = 'none';
         }
         pendingResult = null;
-        // Trigger high score check
-        onGameOver(wasResult === 'won', level);
       }
     }
 

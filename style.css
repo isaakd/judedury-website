@@ -333,33 +333,55 @@ html, body {
     }
 }
 
-/* Clouds - warm tinted, softer */
+/* Clouds - image-based with CSS fallback */
 .game-cloud {
     z-index: 2;
-    background: rgba(255, 255, 255, 0.85);
+    background-image: url('sprites/env/cloud1.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    border-radius: 0;
+    opacity: 1;
+    box-shadow: none;
+}
+.game-cloud::before, .game-cloud::after {
+    display: none;
+}
+/* CSS fallback for clouds */
+.game-cloud.css-fallback {
+    background-image: none;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 20px;
+    opacity: 0.85;
     box-shadow:
         0 4px 20px rgba(180, 140, 80, 0.1),
         inset 0 -4px 10px rgba(255, 220, 150, 0.2);
 }
-.game-cloud::before, .game-cloud::after {
+.game-cloud.css-fallback::before, .game-cloud.css-fallback::after {
+    display: block;
     background: rgba(255, 255, 255, 0.85);
 }
 
-.gc-1 { width: 160px; height: 50px; top: 8%; animation: cloudMove 35s linear infinite; }
-.gc-1::before { width: 65px; height: 60px; top: -30px; left: 25px; }
-.gc-1::after { width: 85px; height: 70px; top: -35px; left: 60px; }
+.gc-1 { width: 200px; height: 100px; top: 5%; animation: cloudMove 35s linear infinite; }
+.gc-1.css-fallback { width: 160px; height: 50px; }
+.gc-1.css-fallback::before { width: 65px; height: 60px; top: -30px; left: 25px; }
+.gc-1.css-fallback::after { width: 85px; height: 70px; top: -35px; left: 60px; }
 
-.gc-2 { width: 120px; height: 40px; top: 22%; animation: cloudMove 45s linear infinite 8s; }
-.gc-2::before { width: 50px; height: 48px; top: -24px; left: 18px; }
-.gc-2::after { width: 65px; height: 55px; top: -28px; left: 48px; }
+.gc-2 { width: 160px; height: 80px; top: 18%; animation: cloudMove 45s linear infinite 8s; background-image: url('sprites/env/cloud2.png'); }
+.gc-2.css-fallback { width: 120px; height: 40px; }
+.gc-2.css-fallback::before { width: 50px; height: 48px; top: -24px; left: 18px; }
+.gc-2.css-fallback::after { width: 65px; height: 55px; top: -28px; left: 48px; }
 
-.gc-3 { width: 140px; height: 45px; top: 5%; animation: cloudMove 40s linear infinite 15s; }
-.gc-3::before { width: 55px; height: 55px; top: -28px; left: 22px; }
-.gc-3::after { width: 75px; height: 62px; top: -32px; left: 52px; }
+.gc-3 { width: 180px; height: 90px; top: 3%; animation: cloudMove 40s linear infinite 15s; background-image: url('sprites/env/cloud3.png'); }
+.gc-3.css-fallback { width: 140px; height: 45px; }
+.gc-3.css-fallback::before { width: 55px; height: 55px; top: -28px; left: 22px; }
+.gc-3.css-fallback::after { width: 75px; height: 62px; top: -32px; left: 52px; }
 
-.gc-4 { width: 100px; height: 36px; top: 16%; animation: cloudMove 30s linear infinite 22s; }
-.gc-4::before { width: 42px; height: 42px; top: -21px; left: 14px; }
-.gc-4::after { width: 54px; height: 48px; top: -24px; left: 40px; }
+.gc-4 { width: 140px; height: 70px; top: 14%; animation: cloudMove 30s linear infinite 22s; }
+.gc-4.css-fallback { width: 100px; height: 36px; }
+.gc-4.css-fallback::before { width: 42px; height: 42px; top: -21px; left: 14px; }
+.gc-4.css-fallback::after { width: 54px; height: 48px; top: -24px; left: 40px; }
 
 /* Birds */
 .bird {
@@ -453,7 +475,7 @@ html, body {
 /* ===== GROUND ===== */
 #ground {
     position: absolute;
-    width: 3200px;
+    width: 3500px;
     height: 35%;
     bottom: 0;
     background: linear-gradient(180deg,
@@ -522,18 +544,29 @@ html, body {
     z-index: 4;
 }
 
-/* ===== TREES - flat pixel art style ===== */
+/* ===== TREES - image-based with CSS fallback ===== */
 .tree {
     position: absolute;
+    width: 160px;
+    height: 200px;
+    bottom: 60%;
+    z-index: 6;
+    image-rendering: pixelated;
+    background-image: url('sprites/env/tree.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+}
+
+/* CSS fallback for trees (shown if no image) */
+.tree.css-fallback {
     width: 90px;
     height: 130px;
     bottom: 63%;
-    z-index: 6;
-    image-rendering: pixelated;
+    background-image: none;
 }
 
-/* Trunk - flat with hard shadow */
-.tree::before {
+.tree.css-fallback::before {
     content: '';
     position: absolute;
     bottom: 0;
@@ -545,8 +578,7 @@ html, body {
     box-shadow: inset -5px 0 0 #5a3218;
 }
 
-/* Canopy - flat pixel art, hard-edged shading */
-.tree::after {
+.tree.css-fallback::after {
     content: '';
     position: absolute;
     top: 0;
@@ -563,10 +595,18 @@ html, body {
 }
 
 .tree-1 { left: 50px; }
-.tree-2 { left: 450px; transform: scale(1.3); bottom: 62%; }
-.tree-3 { left: 900px; transform: scale(0.95); }
-.tree-4 { left: 1800px; transform: scale(1.15); bottom: 62%; }
-.tree-5 { left: 2600px; transform: scale(1.05); }
+.tree-2 { left: 500px; transform: scale(1.2); }
+.tree-3 { left: 1000px; transform: scale(0.9); }
+.tree-4 { left: 1800px; transform: scale(1.15); }
+.tree-5 { left: 2700px; transform: scale(1.05); }
+
+/* Tree variants */
+.tree-2, .tree-4 {
+    background-image: url('sprites/env/tree2.png');
+}
+.tree-3, .tree-5 {
+    background-image: url('sprites/env/tree3.png');
+}
 
 /* ===== FLOWERS - Ghibli wildflowers ===== */
 .flower {
@@ -752,14 +792,15 @@ html, body {
 
 /* Object positioning */
 #obj-bike { left: 200px; }
-#obj-baseball { left: 400px; }
-#obj-beyblade { left: 650px; }
+#obj-baseball { left: 450px; }
+#obj-beyblade { left: 700px; }
 #obj-dino { left: 950px; }
 #obj-hotwheels { left: 1200px; }
-#obj-lego { left: 1450px; }
-#obj-gallery { left: 1700px; }
-#obj-tennis { left: 2000px; }
-#obj-cricket { left: 2300px; }
+#obj-movies { left: 1450px; }
+#obj-lego { left: 1700px; }
+#obj-gallery { left: 1950px; }
+#obj-tennis { left: 2200px; }
+#obj-cricket { left: 2500px; }
 
 /* Sprites rendered via canvas in script.js */
 

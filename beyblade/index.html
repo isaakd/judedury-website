@@ -1,37 +1,780 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jude's Beyblade Game</title>
-    <style>
-        body {
-            margin: 0;
-            background: #1a1a2e;
-            color: #ffd700;
-            font-family: 'Press Start 2P', monospace;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            text-align: center;
-        }
-        .msg {
-            font-size: 14px;
-            line-height: 2.5;
-        }
-        a {
-            color: #7ec8e3;
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dude's Beyblade Battle</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #000;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    image-rendering: pixelated;
+  }
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  #ui-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+  }
+  #rip-btn {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: all;
+    background: #e03040;
+    color: #fff;
+    border: 4px solid #fff;
+    padding: 16px 40px;
+    font-size: 24px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    image-rendering: pixelated;
+  }
+  #rip-btn:active { background: #ff5060; }
+  #rip-btn.hidden { display: none; }
+  #controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    pointer-events: all;
+    display: none;
+    grid-template-columns: 50px 50px 50px;
+    grid-template-rows: 50px 50px 50px;
+    gap: 3px;
+    opacity: 0.75;
+  }
+  #controls.visible { display: grid; }
+  .arrow-btn {
+    width: 50px;
+    height: 50px;
+    background: #223;
+    border: 3px solid #5af;
+    color: #5af;
+    font-size: 24px;
+    font-family: monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .arrow-btn:active, .arrow-btn.active {
+    background: #5af;
+    color: #000;
+  }
+  .blank { visibility: hidden; }
+  #message {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    pointer-events: none;
+  }
+  #message.show { display: flex; }
+  #message canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  #restart-btn {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: all;
+    background: #2a2;
+    color: #fff;
+    border: 3px solid #fff;
+    padding: 12px 32px;
+    font-size: 20px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+  }
+  #restart-btn:active { background: #4c4; }
+  #next-level-btn {
+    position: absolute;
+    bottom: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: all;
+    background: #fa0;
+    color: #000;
+    border: 3px solid #fff;
+    padding: 12px 32px;
+    font-size: 20px;
+    font-family: monospace;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+  }
+  #next-level-btn:active { background: #fc4; }
+</style>
 </head>
 <body>
-    <div class="msg">
-        🌀 BEYBLADE GAME 🌀<br><br>
-        Coming soon!<br>
-        Drop the game files here.<br><br>
-        <a href="../">← Back to Jude's World</a>
-    </div>
+<canvas id="game"></canvas>
+<div id="ui-overlay">
+  <button id="rip-btn">RIP IT!</button>
+  <div id="controls">
+    <div class="blank"></div>
+    <button class="arrow-btn" data-dir="up">&#9650;</button>
+    <div class="blank"></div>
+    <button class="arrow-btn" data-dir="left">&#9664;</button>
+    <div class="blank"></div>
+    <button class="arrow-btn" data-dir="right">&#9654;</button>
+    <div class="blank"></div>
+    <button class="arrow-btn" data-dir="down">&#9660;</button>
+    <div class="blank"></div>
+  </div>
+  <div id="message"></div>
+  <button id="restart-btn">TRY AGAIN</button>
+  <button id="next-level-btn">NEXT LEVEL</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// Pixel scale - we render at low res then scale up
+const SCALE = 3;
+let W, H; // logical (pixel art) dimensions
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  W = Math.floor(canvas.width / SCALE);
+  H = Math.floor(canvas.height / SCALE);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ===== 8-BIT PIXEL ART DRAWING HELPERS =====
+function px(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x) * SCALE, Math.floor(y) * SCALE, SCALE, SCALE);
+}
+
+function drawPixelArr(ox, oy, data, palette) {
+  for (let r = 0; r < data.length; r++) {
+    for (let c = 0; c < data[r].length; c++) {
+      const ch = data[r][c];
+      if (ch !== '.' && palette[ch]) {
+        px(ox + c, oy + r, palette[ch]);
+      }
+    }
+  }
+}
+
+// ===== PIXEL FONT (simple 5x5) =====
+const FONT = {
+  '0':'01110,10001,10001,10001,01110',
+  '1':'00100,01100,00100,00100,01110',
+  '2':'01110,10001,00110,01000,11111',
+  '3':'11110,00001,01110,00001,11110',
+  '4':'10010,10010,11111,00010,00010',
+  '5':'11111,10000,11110,00001,11110',
+  '6':'01110,10000,11110,10001,01110',
+  '7':'11111,00010,00100,01000,01000',
+  '8':'01110,10001,01110,10001,01110',
+  '9':'01110,10001,01111,00001,01110',
+  'N':'10001,11001,10101,10011,10001',
+  'E':'11111,10000,11110,10000,11111',
+  'X':'10001,01010,00100,01010,10001',
+  'T':'11111,00100,00100,00100,00100',
+  ':':'00000,00100,00000,00100,00000',
+  '/':'00001,00010,00100,01000,10000',
+  ' ':'00000,00000,00000,00000,00000',
+  'D':'11100,10010,10001,10010,11100',
+  'U':'10001,10001,10001,10001,01110',
+  'S':'01111,10000,01110,00001,11110',
+  'B':'11110,10001,11110,10001,11110',
+  'L':'10000,10000,10000,10000,11111',
+  'A':'01110,10001,11111,10001,10001',
+  'R':'11110,10001,11110,10010,10001',
+  'I':'01110,00100,00100,00100,01110',
+  'P':'11110,10001,11110,10000,10000',
+  'C':'01110,10000,10000,10000,01110',
+  'O':'01110,10001,10001,10001,01110',
+  'W':'10001,10001,10101,10101,01010',
+  'G':'01110,10000,10011,10001,01110',
+  'Y':'10001,01010,00100,00100,00100',
+  'H':'10001,10001,11111,10001,10001',
+  'M':'10001,11011,10101,10001,10001',
+  'F':'11111,10000,11110,10000,10000',
+  'K':'10010,10100,11000,10100,10010',
+  'J':'00001,00001,00001,10001,01110',
+  'V':'10001,10001,10001,01010,00100',
+  '!':'00100,00100,00100,00000,00100',
+  'Q':'01110,10001,10101,10010,01101',
+  'Z':'11111,00010,00100,01000,11111',
+};
+
+function drawText(str, x, y, color, scale) {
+  scale = scale || 1;
+  let cx = x;
+  for (const ch of str.toUpperCase()) {
+    const glyph = FONT[ch];
+    if (!glyph) { cx += 6 * scale; continue; }
+    const rows = glyph.split(',');
+    for (let r = 0; r < rows.length; r++) {
+      for (let c = 0; c < rows[r].length; c++) {
+        if (rows[r][c] === '1') {
+          for (let sy = 0; sy < scale; sy++)
+            for (let sx = 0; sx < scale; sx++)
+              px(cx + c * scale + sx, y + r * scale + sy, color);
+        }
+      }
+    }
+    cx += 6 * scale;
+  }
+}
+
+// ===== BEYBLADE PIXEL ART =====
+// 4 rotated frames of the beyblade (like the reference image - metallic blades with blue center)
+const BLADE_FRAMES = [];
+function generateBladeFrames() {
+  const size = 17;
+  const ctr = 8;
+  for (let f = 0; f < 8; f++) {
+    const frame = [];
+    const angle = (f / 8) * Math.PI * 2;
+    for (let y = 0; y < size; y++) {
+      const row = [];
+      for (let x = 0; x < size; x++) {
+        const dx = x - ctr, dy = y - ctr;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const a = Math.atan2(dy, dx) + angle;
+        if (dist < 2.5) {
+          row.push('#36f'); // blue center gem
+        } else if (dist < 3.5) {
+          row.push('#147'); // dark ring
+        } else if (dist < 7.5) {
+          // 3 blade petals
+          const petal = ((a % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+          const sector = petal / (Math.PI*2/3);
+          const inPetal = (sector % 1) < 0.45;
+          if (inPetal && dist > 3.5) {
+            const tip = dist > 6 ? '#aab' : '#889';
+            row.push(tip); // metallic silver blade
+          } else {
+            row.push(dist < 4.5 ? '#556' : null);
+          }
+        } else if (dist < 8.5) {
+          // outer ring
+          const petal = ((a % (Math.PI*2)) + Math.PI*2) % (Math.PI*2);
+          const sector = petal / (Math.PI*2/3);
+          const inPetal = (sector % 1) < 0.4;
+          if (inPetal) row.push('#99a');
+          else row.push(null);
+        } else {
+          row.push(null);
+        }
+      }
+      frame.push(row);
+    }
+    BLADE_FRAMES.push(frame);
+  }
+}
+generateBladeFrames();
+
+function drawBlade8bit(cx, cy, frameIdx, glow) {
+  const frame = BLADE_FRAMES[frameIdx % BLADE_FRAMES.length];
+  const size = frame.length;
+  const half = Math.floor(size / 2);
+  // Glow effect
+  if (glow) {
+    for (let y = -half-2; y <= half+2; y++) {
+      for (let x = -half-2; x <= half+2; x++) {
+        const d = Math.sqrt(x*x+y*y);
+        if (d < half+2 && d >= half-1 && Math.random() < 0.15) {
+          px(cx+x, cy+y, '#26c');
+        }
+      }
+    }
+  }
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      if (frame[y][x]) {
+        px(cx - half + x, cy - half + y, frame[y][x]);
+      }
+    }
+  }
+  // Highlight on center
+  px(cx, cy-1, '#8bf');
+  px(cx-1, cy, '#5af');
+  px(cx, cy, '#fff');
+}
+
+// ===== DUDE IMAGES =====
+const dudeWinImg = new Image();
+dudeWinImg.src = 'Dude winner.png';
+const dudeLoseImg = new Image();
+dudeLoseImg.src = 'Dude loser.png';
+
+function drawDudeImage(img) {
+  if (!img.complete || !img.naturalWidth) return;
+  // Draw the image centered, filling most of the screen
+  const maxW = canvas.width * 0.7;
+  const maxH = canvas.height * 0.55;
+  const ratio = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+  const w = img.naturalWidth * ratio;
+  const h = img.naturalHeight * ratio;
+  const x = (canvas.width - w) / 2;
+  const y = (canvas.height - h) / 2 - 10;
+  // Pixelated rendering
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, x, y, w, h);
+}
+
+// ===== GAME STATE =====
+let state = 'ready';
+let blade = { x: 0, y: 0, vx: 0, vy: 0, spin: 0, radius: 9 };
+let numbers = [];
+let nextNumber = 1;
+let collected = 0;
+let maxSpin = 18;
+let particles = [];
+let frameCount = 0;
+let resultTimer = 0;
+let level = 1;
+let pendingResult = null; // 'won' or 'lost'
+let pendingTimer = 0;
+const PENDING_DELAY = 60; // ~1 second at 60fps
+
+// Level settings - gets harder each level
+function getLevelSettings(lvl) {
+  return {
+    friction: Math.min(0.88 + lvl * 0.01, 0.96),  // L1=0.89 (slidy easy), L8=0.96 (tight)
+    spinDecay: 0.001 + lvl * 0.0004,               // L1=0.0014 (very slow), L8=0.0042 (fast)
+    maxSpeed: Math.max(4 - lvl * 0.2, 1.5),        // L1=3.8 (slow), higher=faster blade
+    nudgeForce: Math.max(5 - lvl * 0.3, 2),        // L1=4.7 (big push), higher=smaller
+    accel: Math.max(1.2 - lvl * 0.05, 0.5),        // L1=1.15 (responsive), higher=sluggish
+    spinBoost: Math.max(2.5 - lvl * 0.15, 0.8),    // L1=2.35 (big reward), higher=less
+    wrongPenalty: 0.05 + lvl * 0.04,                // L1=0.09 (tiny), higher=ouch
+    collectRadius: Math.max(12 - lvl * 0.5, 6),    // L1=11.5 (easy pick up), higher=precise
+  };
+}
+
+const ripBtn = document.getElementById('rip-btn');
+const controls = document.getElementById('controls');
+const messageEl = document.getElementById('message');
+const restartBtn = document.getElementById('restart-btn');
+const nextLevelBtn = document.getElementById('next-level-btn');
+
+// ===== SCATTER NUMBERS =====
+function scatterNumbers() {
+  numbers = [];
+  const margin = 20;
+  const cx = W / 2;
+  const cy = H / 2;
+  const minDist = 30;
+  const w = W - margin * 2;
+  const h = H - margin * 2 - 30; // leave room for HUD at top
+  for (let i = 1; i <= 10; i++) {
+    let x, y, overlap;
+    let tries = 0;
+    do {
+      x = margin + Math.random() * w;
+      y = margin + 16 + Math.random() * h;
+      const tooClose = Math.hypot(x - cx, y - cy) < minDist;
+      // Avoid bottom-right corner where controls sit
+      const inControlZone = x > W - 60 && y > H - 60;
+      overlap = tooClose || inControlZone || numbers.some(n => Math.hypot(n.x - x, n.y - y) < 22);
+      tries++;
+    } while (overlap && tries < 300);
+    numbers.push({ val: i, x, y, collected: false, scattered: true });
+  }
+}
+
+// ===== START GAME =====
+function startGame(nextLevel) {
+  if (nextLevel) level++;
+  state = 'spinning';
+  ripBtn.classList.add('hidden');
+  controls.classList.add('visible');
+  restartBtn.style.display = 'none';
+  nextLevelBtn.style.display = 'none';
+  messageEl.classList.remove('show');
+
+  blade.x = W / 2;
+  blade.y = H / 2;
+  blade.vx = 0;
+  blade.vy = 0;
+  blade.spin = maxSpin;
+  nextNumber = 1;
+  collected = 0;
+  particles = [];
+  resultTimer = 0;
+  pendingResult = null;
+  pendingTimer = 0;
+
+  scatterNumbers();
+}
+
+ripBtn.addEventListener('click', () => { level = 1; startGame(); });
+restartBtn.addEventListener('click', () => startGame());
+nextLevelBtn.addEventListener('click', () => startGame(true));
+
+// ===== CONTROLS =====
+let pressing = { up: false, down: false, left: false, right: false };
+
+function nudgeBlade(dir) {
+  if (state !== 'spinning') return;
+  const s = getLevelSettings(level);
+  const force = s.nudgeForce;
+  if (dir === 'up') blade.vy -= force;
+  if (dir === 'down') blade.vy += force;
+  if (dir === 'left') blade.vx -= force;
+  if (dir === 'right') blade.vx += force;
+}
+
+document.querySelectorAll('.arrow-btn').forEach(btn => {
+  const dir = btn.dataset.dir;
+  btn.addEventListener('mousedown', () => { pressing[dir] = true; nudgeBlade(dir); });
+  btn.addEventListener('mouseup', () => pressing[dir] = false);
+  btn.addEventListener('mouseleave', () => pressing[dir] = false);
+  btn.addEventListener('touchstart', (e) => { e.preventDefault(); pressing[dir] = true; nudgeBlade(dir); });
+  btn.addEventListener('touchend', (e) => { e.preventDefault(); pressing[dir] = false; });
+  btn.addEventListener('touchcancel', () => pressing[dir] = false);
+});
+
+const keyDirMap = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+function getBtnByDir(dir) { return document.querySelector(`.arrow-btn[data-dir="${dir}"]`); }
+
+document.addEventListener('keydown', (e) => {
+  const dir = keyDirMap[e.key];
+  if (dir) {
+    if (!pressing[dir]) nudgeBlade(dir);
+    pressing[dir] = true;
+    const btn = getBtnByDir(dir);
+    if (btn) btn.classList.add('active');
+    e.preventDefault();
+  }
+  // Space/Enter to start
+  if ((e.key === ' ' || e.key === 'Enter') && state === 'ready') {
+    level = 1; startGame();
+    e.preventDefault();
+  }
+});
+document.addEventListener('keyup', (e) => {
+  const dir = keyDirMap[e.key];
+  if (dir) {
+    pressing[dir] = false;
+    const btn = getBtnByDir(dir);
+    if (btn) btn.classList.remove('active');
+  }
+});
+
+// ===== PARTICLES (pixel style) =====
+function spawnPixelParticles(x, y, color, count) {
+  for (let i = 0; i < (count || 8); i++) {
+    const a = Math.random() * Math.PI * 2;
+    const spd = 0.5 + Math.random() * 1.5;
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * spd,
+      vy: Math.sin(a) * spd,
+      life: 15 + Math.random() * 15,
+      color
+    });
+  }
+}
+
+// ===== DRAW NUMBER (8-bit style) =====
+function drawNumber8bit(n) {
+  if (n.collected) return;
+  const isNext = n.val === nextNumber;
+  const x = Math.floor(n.x);
+  const y = Math.floor(n.y);
+
+  // Background box
+  const bgColor = isNext ? '#148' : '#223';
+  const borderColor = isNext ? '#5af' : '#445';
+  for (let dy = -7; dy <= 7; dy++)
+    for (let dx = -7; dx <= 7; dx++)
+      px(x+dx, y+dy, bgColor);
+  // Border
+  for (let d = -7; d <= 7; d++) {
+    px(x+d, y-7, borderColor);
+    px(x+d, y+7, borderColor);
+    px(x-7, y+d, borderColor);
+    px(x+7, y+d, borderColor);
+  }
+
+  // Pulsing highlight for next number
+  if (isNext && Math.floor(frameCount / 15) % 2 === 0) {
+    for (let d = -8; d <= 8; d++) {
+      px(x+d, y-8, '#5af');
+      px(x+d, y+8, '#5af');
+      px(x-8, y+d, '#5af');
+      px(x+8, y+d, '#5af');
+    }
+  }
+
+  // Number text
+  const numStr = '' + n.val;
+  const textColor = isNext ? '#5af' : '#667';
+  const tw = numStr.length * 6;
+  drawText(numStr, x - Math.floor(tw/2), y - 2, textColor);
+}
+
+// ===== HUD =====
+function drawHUD() {
+  // Top bar background
+  for (let y = 0; y < 12; y++)
+    for (let x = 0; x < W; x++)
+      px(x, y, '#112');
+
+  // "NEXT: X"
+  drawText('NEXT:' + nextNumber, 2, 3, '#5af');
+
+  // Spin bar
+  const barX = Math.floor(W / 2) - 30;
+  const barW = 60;
+  const barY = 4;
+  const barH = 4;
+  // Border
+  for (let x = barX-1; x <= barX+barW; x++) {
+    px(x, barY-1, '#445');
+    px(x, barY+barH, '#445');
+  }
+  for (let y = barY; y < barY+barH; y++) {
+    px(barX-1, y, '#445');
+    px(barX+barW, y, '#445');
+  }
+  // Fill
+  const fillW = Math.floor((blade.spin / maxSpin) * barW);
+  for (let y = barY; y < barY+barH; y++)
+    for (let x = barX; x < barX + barW; x++) {
+      if (x < barX + fillW) {
+        const pct = (x - barX) / barW;
+        px(x, y, pct < 0.3 ? '#e33' : pct < 0.6 ? '#ea3' : '#3e3');
+      } else {
+        px(x, y, '#222');
+      }
+    }
+
+  // Level and score
+  drawText('LV' + level, W - 55, 3, '#3e3');
+  drawText(collected + '/10', W - 30, 3, '#fa0');
+}
+
+// ===== DRAW ARENA FLOOR (8-bit style) =====
+function drawFloor() {
+  // Dark tiled floor
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const tileX = Math.floor(x / 16);
+      const tileY = Math.floor(y / 16);
+      const dark = (tileX + tileY) % 2 === 0;
+      ctx.fillStyle = dark ? '#1a1a2e' : '#16213e';
+      ctx.fillRect(x * SCALE, y * SCALE, SCALE, SCALE);
+    }
+  }
+}
+
+// ===== MAIN LOOP =====
+function loop() {
+  requestAnimationFrame(loop);
+  frameCount++;
+
+  // Clear
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (state === 'ready') {
+    drawFloor();
+
+    // Title
+    drawText('DUDES BLADE', Math.floor(W/2) - 33, 20, '#5af', 2);
+    drawText('BATTLE', Math.floor(W/2) - 18, 34, '#fa0', 2);
+
+    // Draw Dude winner image on title screen
+    if (dudeWinImg.complete && dudeWinImg.naturalWidth) {
+      const maxW = canvas.width * 0.35;
+      const maxH = canvas.height * 0.35;
+      const ratio = Math.min(maxW / dudeWinImg.naturalWidth, maxH / dudeWinImg.naturalHeight);
+      const iw = dudeWinImg.naturalWidth * ratio;
+      const ih = dudeWinImg.naturalHeight * ratio;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(dudeWinImg, (canvas.width - iw) / 2, 45 * SCALE, iw, ih);
+    }
+
+    // Spinning blade preview
+    const bladeFrame = Math.floor(frameCount / 3) % BLADE_FRAMES.length;
+    drawBlade8bit(Math.floor(W/2), H - 60, bladeFrame, true);
+
+    drawText('PRESS RIP IT TO START!', Math.floor(W/2) - 63, H - 35, '#fff');
+    return;
+  }
+
+  if (state === 'spinning') {
+    drawFloor();
+
+    // Apply controls - level-based difficulty
+    const s = getLevelSettings(level);
+    if (pressing.up) blade.vy -= s.accel;
+    if (pressing.down) blade.vy += s.accel;
+    if (pressing.left) blade.vx -= s.accel;
+    if (pressing.right) blade.vx += s.accel;
+
+    // Friction - lower on easy levels = blade glides more smoothly
+    blade.vx *= s.friction;
+    blade.vy *= s.friction;
+
+    // Cap max speed so it's not too wild
+    const spd = Math.hypot(blade.vx, blade.vy);
+    if (spd > s.maxSpeed) {
+      blade.vx = (blade.vx / spd) * s.maxSpeed;
+      blade.vy = (blade.vy / spd) * s.maxSpeed;
+    }
+
+    // Move
+    blade.x += blade.vx;
+    blade.y += blade.vy;
+
+    // Bounce off walls
+    if (blade.x - blade.radius < 0) { blade.x = blade.radius; blade.vx *= -0.5; }
+    if (blade.x + blade.radius > W) { blade.x = W - blade.radius; blade.vx *= -0.5; }
+    if (blade.y - blade.radius < 13) { blade.y = 13 + blade.radius; blade.vy *= -0.5; }
+    if (blade.y + blade.radius > H) { blade.y = H - blade.radius; blade.vy *= -0.5; }
+
+    // Spin decay - slower on early levels, faster on later
+    blade.spin -= s.spinDecay;
+
+    if (blade.spin <= 0 && !pendingResult) {
+      blade.spin = 0;
+      pendingResult = 'lost';
+      pendingTimer = PENDING_DELAY;
+    }
+
+    // Check number collection
+    numbers.forEach(n => {
+      if (n.collected || !n.scattered) return;
+      const dist = Math.hypot(blade.x - n.x, blade.y - n.y);
+      if (dist < blade.radius + s.collectRadius) {
+        if (n.val === nextNumber) {
+          n.collected = true;
+          collected++;
+          nextNumber++;
+          spawnPixelParticles(n.x, n.y, '#5af', 10);
+          // Spin boost - bigger on easy levels
+          blade.spin = Math.min(blade.spin + s.spinBoost, maxSpin);
+
+          if (collected >= 10 && !pendingResult) {
+            pendingResult = 'won';
+            pendingTimer = PENDING_DELAY;
+          }
+        } else if (n.val > nextNumber) {
+          // Wrong number - tiny penalty
+          spawnPixelParticles(n.x, n.y, '#e33', 5);
+          blade.spin = Math.max(blade.spin - s.wrongPenalty, 0);
+        }
+      }
+    });
+
+    // Draw numbers
+    numbers.forEach(drawNumber8bit);
+
+    // Draw blade
+    const bladeFrame = Math.floor(frameCount / 2) % BLADE_FRAMES.length;
+    drawBlade8bit(Math.floor(blade.x), Math.floor(blade.y), bladeFrame, blade.spin > 2);
+
+    // Trail sparks
+    if (Math.hypot(blade.vx, blade.vy) > 1 && frameCount % 3 === 0) {
+      particles.push({
+        x: blade.x + (Math.random()-0.5)*4,
+        y: blade.y + (Math.random()-0.5)*4,
+        vx: -blade.vx*0.1, vy: -blade.vy*0.1,
+        life: 8 + Math.random()*8,
+        color: '#5af'
+      });
+    }
+
+    // Pending result countdown - show flash text before switching
+    if (pendingResult) {
+      pendingTimer--;
+      // Flash text on screen
+      if (Math.floor(frameCount / 8) % 2 === 0) {
+        if (pendingResult === 'won') {
+          drawText('YEAH!', Math.floor(W/2) - 15, Math.floor(H/2) - 10, '#ff4', 2);
+        } else {
+          drawText('OH NO!', Math.floor(W/2) - 18, Math.floor(H/2) - 10, '#e33', 2);
+        }
+      }
+      if (pendingTimer <= 0) {
+        state = pendingResult;
+        resultTimer = 0;
+        controls.classList.remove('visible');
+        if (pendingResult === 'won') {
+          nextLevelBtn.style.display = 'block';
+          restartBtn.style.display = 'none';
+        } else {
+          restartBtn.style.display = 'block';
+          nextLevelBtn.style.display = 'none';
+        }
+        pendingResult = null;
+      }
+    }
+
+    drawHUD();
+  }
+
+  if (state === 'won' || state === 'lost') {
+    resultTimer++;
+
+    // Dark background
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the Dude image
+    if (state === 'won') {
+      drawDudeImage(dudeWinImg);
+    } else {
+      drawDudeImage(dudeLoseImg);
+    }
+
+    // Semi-transparent overlay at top and bottom for text readability
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, canvas.width, 50 * SCALE);
+    ctx.fillRect(0, canvas.height - 30 * SCALE, canvas.width, 30 * SCALE);
+
+    // Text
+    if (state === 'won') {
+      drawText('DUDE WINS!', Math.floor(W/2) - 60, 8, '#ff4', 2);
+      drawText('LEVEL ' + level + ' COMPLETE!', Math.floor(W/2) - 46, 24, '#5af');
+    } else {
+      drawText('DUDE TRY AGAIN', Math.floor(W/2) - 84, 8, '#e33', 2);
+      drawText('LEVEL ' + level + '  ' + collected + '/10', Math.floor(W/2) - 34, 24, '#fa0');
+    }
+  }
+
+  // Draw particles
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.life--;
+    if (p.life > 0) {
+      px(Math.floor(p.x), Math.floor(p.y), p.color);
+      if (Math.random() < 0.5) px(Math.floor(p.x)+1, Math.floor(p.y), p.color);
+    }
+  });
+  particles = particles.filter(p => p.life > 0);
+}
+
+loop();
+</script>
 </body>
 </html>

@@ -1201,29 +1201,61 @@ function loop() {
   if (state === 'ready') {
     drawFloor();
 
-    // --- TITLE SCREEN LAYOUT (top to bottom) ---
-    // Title at top
-    drawText('DUDES BLADE', Math.floor(W/2) - 33, 10, '#5af', 2);
-    drawText('BATTLE', Math.floor(W/2) - 18, 24, '#fa0', 2);
+    // --- BOUNCING BLADES in bottom half ---
+    if (!window._titleBlades) {
+      window._titleBlades = [];
+      for (let i = 0; i < 5; i++) {
+        window._titleBlades.push({
+          x: 30 + Math.random() * (W - 60),
+          y: H * 0.55 + Math.random() * (H * 0.35),
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3,
+        });
+      }
+    }
+    const bf = Math.floor(frameCount / 2) % BLADE_FRAMES.length;
+    window._titleBlades.forEach(b => {
+      b.x += b.vx; b.y += b.vy;
+      // Bounce off walls (bottom half only)
+      if (b.x < 15 || b.x > W - 15) b.vx *= -1;
+      if (b.y < H * 0.52 || b.y > H - 15) b.vy *= -1;
+      b.x = Math.max(15, Math.min(W - 15, b.x));
+      b.y = Math.max(H * 0.52, Math.min(H - 15, b.y));
+      drawBlade8bit(Math.floor(b.x), Math.floor(b.y), bf, true);
+      // Trail sparks
+      if (frameCount % 4 === 0) {
+        particles.push({ x: b.x, y: b.y, vx: (Math.random()-0.5)*2, vy: (Math.random()-0.5)*2, life: 12, color: '#5af' });
+      }
+    });
 
-    // Winner image centered in upper area
+    // --- BIG centered image (top half) ---
     if (dudeWinImg.complete && dudeWinImg.naturalWidth) {
-      const maxW = canvas.width * 0.32;
-      const maxH = canvas.height * 0.30;
+      const maxW = canvas.width * 0.50;
+      const maxH = canvas.height * 0.42;
       const ratio = Math.min(maxW / dudeWinImg.naturalWidth, maxH / dudeWinImg.naturalHeight);
       const iw = dudeWinImg.naturalWidth * ratio;
       const ih = dudeWinImg.naturalHeight * ratio;
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(dudeWinImg, (canvas.width - iw) / 2, 36 * SCALE, iw, ih);
+      const imgY = (canvas.height * 0.48 - ih) / 2 + 28 * SCALE;
+      ctx.drawImage(dudeWinImg, (canvas.width - iw) / 2, imgY, iw, ih);
     }
 
-    // Blade preview just above buttons area
-    const bladeFrame = Math.floor(frameCount / 3) % BLADE_FRAMES.length;
-    drawBlade8bit(Math.floor(W/2), H - 68, bladeFrame, true);
+    // --- Title text centered above image ---
+    const cx = Math.floor(W / 2);
+    drawText('DUDES BLADE', cx - 33, 8, '#5af', 2);
+    drawText('BATTLE', cx - 18, 22, '#fa0', 2);
 
-    // Credit at very bottom
-    drawText('A GAME INVENTED', Math.floor(W/2) - 23, H - 16, '#668', 1);
-    drawText('& CRAFTED BY JUDE', Math.floor(W/2) - 27, H - 9, '#668', 1);
+    // --- Credit centered at bottom ---
+    drawText('A GAME INVENTED &', cx - 27, H - 12, '#556', 1);
+    drawText('CRAFTED BY JUDE', cx - 23, H - 5, '#556', 1);
+
+    // Draw particles (blade trails)
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.life--;
+      if (p.life > 0) px(Math.floor(p.x), Math.floor(p.y), p.color);
+    });
+    particles = particles.filter(p => p.life > 0);
+
     return;
   }
 

@@ -13,17 +13,18 @@
     const GROUND_BOTTOM = 92; // % from top where ground ends
 
     // ===== STATION POSITIONS (% of viewport) =====
+    // Two rows spread across the ground area
     const STATIONS = {
-        bike:      { x: 8,   y: 58 },
-        baseball:  { x: 22,  y: 52 },
-        beyblade:  { x: 36,  y: 62 },
-        dino:      { x: 50,  y: 54 },
-        hotwheels: { x: 64,  y: 60 },
-        lego:      { x: 78,  y: 52 },
-        movies:    { x: 15,  y: 72 },
-        gallery:   { x: 43,  y: 78 },
-        tennis:    { x: 71,  y: 74 },
-        cricket:   { x: 92,  y: 64 },
+        bike:      { x: 6,   y: 56 },
+        baseball:  { x: 20,  y: 60 },
+        beyblade:  { x: 34,  y: 56 },
+        dino:      { x: 48,  y: 60 },
+        hotwheels: { x: 62,  y: 56 },
+        lego:      { x: 76,  y: 60 },
+        movies:    { x: 13,  y: 76 },
+        gallery:   { x: 34,  y: 80 },
+        tennis:    { x: 62,  y: 76 },
+        cricket:   { x: 88,  y: 56 },
     };
 
     // ===== STATE =====

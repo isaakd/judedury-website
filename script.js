@@ -10,42 +10,46 @@
 
     // ===== MAP NODE LAYOUT (% positions matching biome map) =====
     const MAP_NODES = {
-        // Start point - center of map
-        start:    { x: 50,  y: 62, label: '' },
-        // Grassland (bottom-left) - Sports
-        baseball: { x: 15,  y: 65, label: 'BASEBALL' },
-        tennis:   { x: 12,  y: 72, label: 'TENNIS' },
-        cricket:  { x: 20,  y: 58, label: 'CRICKET' },
-        // Desert (top-left) - Adventure
-        bike:     { x: 12,  y: 38, label: 'BIKE' },
-        // Rainforest (center) - Dinos
-        dino:     { x: 40,  y: 58, label: 'DINOS' },
-        // Ice Mountain (top-center) - Beyblade & Movies
-        beyblade: { x: 50,  y: 35, label: 'BEYBLADE' },
-        movies:   { x: 50,  y: 22, label: 'MOVIES' },
-        // City (right) - Cars
-        hotwheels:{ x: 72,  y: 55, label: 'CARS' },
-        // Lego City (bottom-right)
-        lego:     { x: 82,  y: 72, label: 'LEGO' },
-        // Cloud Kingdom (far right) - Gallery
-        gallery:  { x: 90,  y: 35, label: 'PHOTOS' },
+        // Start - center of map near Nursery School/crossroads
+        start:    { x: 48,  y: 52, label: '' },
+        // Kiki's House area (right coast) - Baseball
+        baseball: { x: 68,  y: 48, label: 'BASEBALL' },
+        // Wave Spirits / open sea area - Tennis
+        tennis:   { x: 38,  y: 55, label: 'TENNIS' },
+        // Mountains (top-right, near Zeniba's) - Cricket
+        cricket:  { x: 82,  y: 22, label: 'CRICKET' },
+        // Porthaven coast (mid-left, near Valley of Wind) - Bike
+        bike:     { x: 18,  y: 38, label: 'BIKE' },
+        // Tsukamori Forest (bottom-left, near Totoro) - Dinos
+        dino:     { x: 14,  y: 72, label: 'DINOS' },
+        // Howl's Castle / Market Chipping (upper) - Beyblade
+        beyblade: { x: 42,  y: 22, label: 'BEYBLADE' },
+        // Laputa floating island (top-left) - Movies
+        movies:   { x: 6,   y: 12, label: 'MOVIES' },
+        // Koriko City (right coast) - Hot Wheels/Cars
+        hotwheels:{ x: 78,  y: 55, label: 'CARS' },
+        // Iron Town (upper center) - Lego (building!)
+        lego:     { x: 55,  y: 18, label: 'LEGO' },
+        // Sosuke's House / coastal (bottom-center) - Gallery
+        gallery:  { x: 42,  y: 72, label: 'PHOTOS' },
     };
 
-    // Node connections - paths between biomes
+    // Node connections - paths following Ghibli map geography
     const MAP_EDGES = [
-        // From start
-        ['start', 'cricket'], ['start', 'dino'], ['start', 'beyblade'],
-        // Grassland connections
-        ['cricket', 'baseball'], ['cricket', 'tennis'],
-        ['baseball', 'bike'], ['bike', 'cricket'],
-        // Rainforest connections
-        ['dino', 'beyblade'], ['dino', 'cricket'],
-        // Ice mountain
-        ['beyblade', 'movies'], ['beyblade', 'hotwheels'],
-        // City & Lego
-        ['hotwheels', 'lego'], ['hotwheels', 'gallery'],
-        // Cloud kingdom
-        ['gallery', 'movies'],
+        // From start (center crossroads)
+        ['start', 'tennis'], ['start', 'baseball'], ['start', 'beyblade'],
+        ['start', 'gallery'],
+        // Western paths
+        ['tennis', 'bike'], ['tennis', 'dino'],
+        ['bike', 'movies'],
+        // Northern paths (mountain ridge)
+        ['beyblade', 'lego'], ['beyblade', 'movies'],
+        ['lego', 'cricket'],
+        // Eastern paths (coast)
+        ['baseball', 'hotwheels'], ['baseball', 'cricket'],
+        ['hotwheels', 'cricket'],
+        // Southern paths
+        ['dino', 'gallery'],
     ];
 
     // Build adjacency list
@@ -1252,9 +1256,9 @@
         canvas.height = container.clientHeight;
         const ctx = canvas.getContext('2d');
 
-        ctx.strokeStyle = 'rgba(210, 180, 120, 0.7)';
-        ctx.lineWidth = 4;
-        ctx.setLineDash([8, 6]);
+        ctx.strokeStyle = 'rgba(210, 180, 120, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 8]);
         ctx.lineCap = 'round';
 
         MAP_EDGES.forEach(([a, b]) => {

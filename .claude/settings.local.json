@@ -1,7 +1,41 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(gh api:*)",
+      "Bash(mv \"431B93D4-E836-4E74-A6A7-3D418327E2A5_1_201_a.jpeg\" \"jude-beach-treasure.jpeg\")",
+      "Bash(mv \"6C607A41-9CDE-4D41-A15B-4D3B19CF63FA_1_102_o.jpeg\" \"jude-first-day-of-school.jpeg\")",
+      "Bash(mv \"E7663789-7DF4-4024-B502-C5A091C3520E_1_105_c.jpeg\" \"jude-and-the-pelican.jpeg\")",
+      "Bash(mv \"IMG_0383.JPG\" \"jude-bike-seat-blue-helmet.jpg\")",
+      "Bash(mv \"IMG_3546.JPG\" \"jude-red-helmet-scooter.jpg\")",
+      "Bash(mv \"IMG_3984.JPG\" \"jude-orange-bike-riding.jpg\")",
+      "Bash(mv \"IMG_7548.JPG\" \"jude-orange-bike-teal-helmet.jpg\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(node -c script.js)",
+      "Bash(mv \"009A9614-2001-4BAA-9482-EB394EAD129B_1_105_c.jpeg\" \"jude-building-gundam-models.jpeg\")",
+      "Bash(mv \"0108B66B-ECBD-40CA-93D6-AA8CECB5DE6A_1_105_c.jpeg\" \"jude-picking-lemons-mushroom-hat.jpeg\")",
+      "Bash(mv \"05064BD0-4FAA-4632-A4D8-5FC3CC5286FE_1_105_c.jpeg\" \"jude-and-sister-sitting-on-porch.jpeg\")",
+      "Bash(mv \"077ADA1D-BA40-404C-9DA2-271830B03E95_1_105_c.jpeg\" \"jude-holding-trophy.jpeg\")",
+      "Bash(mv \"222136CC-EA60-42A9-80B2-3E64EC71E045_1_105_c.jpeg\" \"jude-canucks-jersey-rawr.jpeg\")",
+      "Bash(ls -la \"/Users/isaakdury/JudeDury Website/.git/\"*.lock)",
+      "Bash(python3 -c \"from PIL import Image; print\\(''''Pillow available''''\\)\")",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -c \"from PIL import Image; print\\(''OK''\\)\")",
+      "Bash(ls -lt /tmp/*.png /tmp/*.jpg /tmp/*.jpeg)",
+      "Bash(find /tmp -maxdepth 3 -name *.png -o -name *.jpg -o -name *.jpeg)",
+      "Bash(find '/Users/isaakdury/JudeDury Website' -maxdepth 2 -name *.png -o -name *.webp)",
+      "Bash(python3:*)",
+      "Bash(curl -sI -L --max-redirs 3 http://judedury.com)",
+      "Bash(mv \"1398A854-238E-4D4F-AA4F-B8D8730003D8_1_105_c.jpeg\" \"building-on-rug.jpeg\")",
+      "Bash(mv \"26EF59DF-508F-4A6F-BD6B-F313621BEBAC_1_105_c.jpeg\" \"showing-ninjago-ship.jpeg\")",
+      "Bash(mv \"3D19A277-12FF-4210-9922-3AF30643E49B_1_105_c.jpeg\" \"building-ninjago-ship.jpeg\")",
+      "Bash(mv \"3D4C8933-39FA-4FEA-858A-C59DD2F02B72_1_105_c.jpeg\" \"colorful-boat-closeup.jpeg\")",
+      "Bash(mv \"5D08F282-6A81-4534-8CA0-A01F94971965_1_105_c.jpeg\" \"star-wars-z95-starfighter.jpeg\")",
+      "Bash(ls -la \"/Users/isaakdury/JudeDury Website/sprites/\"bike*)",
+      "Bash(ls -lt \"/Users/isaakdury/JudeDury Website/sprites/\"*.png)",
+      "Read(//Users/isaakdury/**)",
+      "Bash(find '/Users/isaakdury/JudeDury Website' -name *.png -newer '/Users/isaakdury/JudeDury Website/sprites/jude.png' -not -path */env/*)",
+      "Bash(ls \"/Users/isaakdury/JudeDury Website/sprites/\"jude* \"/Users/isaakdury/JudeDury Website/sprites/\"bike*)"
     ]
   }
 }

@@ -689,6 +689,8 @@ const initOkBtn = document.getElementById('init-ok-btn');
 let mathQuestion = null;  // { text: '2+3', answer: 5 }
 let mathMode = false;
 let mathModeAnnounce = 0; // countdown frames for "MATH MODE!" text
+let mathHintTimer = 0;    // frames since current equation appeared
+let mathHintDelay = 0;    // frames before answer highlight shows
 
 function generateMathQuestion(lvl) {
   if (lvl < 3) return null; // No math for levels 1-2
@@ -790,7 +792,10 @@ function startGame(nextLevel) {
   // Math mode starts at level 3
   mathMode = level >= 3;
   mathQuestion = mathMode ? generateMathQuestion(level) : null;
-  mathModeAnnounce = (mathMode && level === 3) ? 180 : 0; // Show announcement for ~3 secs
+  mathModeAnnounce = (mathMode && level === 3) ? 180 : 0;
+  // Hint delay: level 3 = 3s, level 4 = 4s, level 5 = 5s, etc. (60fps)
+  mathHintDelay = mathMode ? (level * 60) : 0;
+  mathHintTimer = 0;
 
   scatterNumbers();
 }
@@ -1116,13 +1121,15 @@ function spawnPixelParticles(x, y, color, count) {
 // ===== DRAW NUMBER (8-bit style) =====
 function drawNumber8bit(n) {
   if (n.collected) return;
-  const isNext = n.val === getNextTarget();
+  const isTarget = n.val === getNextTarget();
+  // In math mode, only reveal the hint after the delay
+  const showHint = isTarget && (!mathMode || mathHintTimer >= mathHintDelay);
   const x = Math.floor(n.x);
   const y = Math.floor(n.y);
 
-  // Background box
-  const bgColor = isNext ? '#148' : '#223';
-  const borderColor = isNext ? '#5af' : '#445';
+  // Background box - all look the same until hint reveals
+  const bgColor = showHint ? '#148' : '#223';
+  const borderColor = showHint ? '#5af' : '#445';
   for (let dy = -7; dy <= 7; dy++)
     for (let dx = -7; dx <= 7; dx++)
       px(x+dx, y+dy, bgColor);
@@ -1134,8 +1141,8 @@ function drawNumber8bit(n) {
     px(x+7, y+d, borderColor);
   }
 
-  // Pulsing highlight for next number
-  if (isNext && Math.floor(frameCount / 15) % 2 === 0) {
+  // Pulsing highlight only when hint is shown
+  if (showHint && Math.floor(frameCount / 15) % 2 === 0) {
     for (let d = -8; d <= 8; d++) {
       px(x+d, y-8, '#5af');
       px(x+d, y+8, '#5af');
@@ -1146,7 +1153,7 @@ function drawNumber8bit(n) {
 
   // Number text
   const numStr = '' + n.val;
-  const textColor = isNext ? '#5af' : '#667';
+  const textColor = showHint ? '#5af' : '#667';
   const tw = numStr.length * 6;
   drawText(numStr, x - Math.floor(tw/2), y - 2, textColor);
 }
@@ -1281,6 +1288,9 @@ function loop() {
   if (state === 'spinning') {
     drawFloor();
 
+    // Increment math hint timer
+    if (mathMode) mathHintTimer++;
+
     // Apply controls - level-based difficulty
     const s = getLevelSettings(level);
     if (pressing.up) blade.vy -= s.accel;
@@ -1332,6 +1342,7 @@ function loop() {
             // In math mode: generate next question, next sequential number
             nextNumber++;
             mathQuestion = (nextNumber <= 10) ? generateMathQuestion(level) : null;
+            mathHintTimer = 0; // Reset hint timer for new equation
           } else {
             nextNumber++;
           }

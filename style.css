@@ -257,29 +257,30 @@ html, body {
 /* ===== SUN ===== */
 #sun {
     position: absolute;
-    top: 6%;
-    right: 14%;
-    width: 60px;
-    height: 60px;
+    top: 5%;
+    right: 12%;
+    width: 70px;
+    height: 70px;
     z-index: 2;
     border-radius: 50%;
     background: radial-gradient(circle,
-        #fffef0 0%, #fff8d0 30%, #ffe88a 60%, rgba(255,220,100,0) 100%);
+        #fffef0 0%, #fff4d4 40%, #ffe88a 70%, rgba(255,220,100,0) 100%);
     box-shadow:
-        0 0 30px rgba(255,240,180,0.8),
-        0 0 60px rgba(255,220,100,0.4),
-        0 0 100px rgba(255,200,80,0.2);
-    animation: sunPulse 4s ease-in-out infinite;
+        0 0 40px rgba(255,240,180,0.9),
+        0 0 80px rgba(255,220,100,0.5),
+        0 0 120px rgba(255,200,80,0.2);
+    animation: sunPulse 5s ease-in-out infinite;
 }
 .sun-glow {
     position: absolute;
-    inset: -40px;
+    inset: -30px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,240,180,0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255,245,200,0.25) 0%, transparent 65%);
+    pointer-events: none;
 }
 @keyframes sunPulse {
-    0%, 100% { box-shadow: 0 0 30px rgba(255,240,180,0.8), 0 0 60px rgba(255,220,100,0.4); }
-    50% { box-shadow: 0 0 40px rgba(255,240,180,0.9), 0 0 80px rgba(255,220,100,0.5); }
+    0%, 100% { box-shadow: 0 0 40px rgba(255,240,180,0.9), 0 0 80px rgba(255,220,100,0.5); }
+    50% { box-shadow: 0 0 50px rgba(255,245,190,1), 0 0 100px rgba(255,225,110,0.6); }
 }
 
 /* ===== ANIMATED CLOUDS ===== */
@@ -390,13 +391,13 @@ html, body {
 }
 
 .station-icon {
-    width: 64px;
-    height: 64px;
+    width: 96px;
+    height: 96px;
     object-fit: contain;
     image-rendering: auto;
     display: block;
     margin: 0 auto;
-    filter: drop-shadow(2px 3px 2px rgba(20, 40, 10, 0.4));
+    filter: drop-shadow(2px 3px 3px rgba(20, 40, 10, 0.5));
 }
 
 .station-label {
@@ -516,7 +517,7 @@ html, body {
 
 .jude-sprite {
     width: auto;
-    height: 80px;
+    height: 120px;
     image-rendering: auto;
     object-fit: contain;
     display: block;

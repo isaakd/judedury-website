@@ -8,7 +8,7 @@
     const SPRITE_W = 32;
     const SPRITE_H = 40;
     const MOVE_SPEED = 3; // pixels per frame
-    const INTERACT_DIST = 60; // pixels to trigger interaction
+    const INTERACT_DIST = 80; // pixels to trigger interaction
     const GROUND_TOP = 45; // % from top where ground starts (Jude can't go above)
     const GROUND_BOTTOM = 92; // % from top where ground ends
 
@@ -1203,7 +1203,7 @@
     function checkNearbyStation() {
         const near = findNearestStation();
         const prev = nearbyStation;
-        nearbyStation = (near.dist < 6) ? near.id : null;
+        nearbyStation = (near.dist < 8) ? near.id : null;
         // Update glow
         if (prev !== nearbyStation) {
             document.querySelectorAll('.station').forEach(s => s.classList.remove('nearby'));

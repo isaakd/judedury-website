@@ -35,7 +35,9 @@
       "Bash(ls -lt \"/Users/isaakdury/JudeDury Website/sprites/\"*.png)",
       "Read(//Users/isaakdury/**)",
       "Bash(find '/Users/isaakdury/JudeDury Website' -name *.png -newer '/Users/isaakdury/JudeDury Website/sprites/jude.png' -not -path */env/*)",
-      "Bash(ls \"/Users/isaakdury/JudeDury Website/sprites/\"jude* \"/Users/isaakdury/JudeDury Website/sprites/\"bike*)"
+      "Bash(ls \"/Users/isaakdury/JudeDury Website/sprites/\"jude* \"/Users/isaakdury/JudeDury Website/sprites/\"bike*)",
+      "Bash(sort -k9)",
+      "Bash(ffmpeg -i IMG_9084.MOV -c:v libx264 -preset medium -crf 28 -vf \"scale=1280:-2\" -c:a aac -b:a 128k -movflags +faststart lego-building-session.mp4)"
     ]
   }
 }

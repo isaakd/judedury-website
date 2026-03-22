@@ -7,14 +7,28 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #000;
+    background: #0a0a1a;
     overflow: hidden;
     touch-action: none;
     user-select: none;
     image-rendering: pixelated;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+  }
+  #game-container {
+    position: relative;
+    max-width: 1440px;
+    max-height: 900px;
+    width: 100%;
+    height: 100%;
   }
   canvas {
     display: block;
+    width: 100%;
+    height: 100%;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
@@ -153,7 +167,7 @@
   #exit-btn.visible { display: flex; }
   #home-btn {
     position: absolute;
-    top: 8px;
+    bottom: 8px;
     left: 8px;
     pointer-events: all;
     background: rgba(0,0,0,0.6);
@@ -354,6 +368,7 @@
 </style>
 </head>
 <body>
+<div id="game-container">
 <canvas id="game"></canvas>
 <a id="home-btn" href="../#game">&#9751; HOME</a>
 <div id="ui-overlay">
@@ -410,6 +425,7 @@
   </div>
   <button class="init-ok" id="init-ok-btn">OK</button>
 </div>
+</div><!-- /game-container -->
 
 <script>
 const canvas = document.getElementById('game');
@@ -417,13 +433,18 @@ const ctx = canvas.getContext('2d');
 
 // Pixel scale - we render at low res then scale up
 const SCALE = 3;
+const MAX_GAME_W = 1440; // Max game width in CSS pixels
+const MAX_GAME_H = 900;  // Max game height in CSS pixels
 let W, H; // logical (pixel art) dimensions
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  W = Math.floor(canvas.width / SCALE);
-  H = Math.floor(canvas.height / SCALE);
+  const container = document.getElementById('game-container');
+  const gameW = container.clientWidth;
+  const gameH = container.clientHeight;
+  canvas.width = gameW;
+  canvas.height = gameH;
+  W = Math.floor(gameW / SCALE);
+  H = Math.floor(gameH / SCALE);
 }
 resize();
 window.addEventListener('resize', resize);

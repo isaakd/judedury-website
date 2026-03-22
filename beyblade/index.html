@@ -1152,54 +1152,45 @@ function drawNumber8bit(n) {
 }
 
 // ===== HUD =====
+function drawSpinBar(bx, by, bw, bh) {
+  for (let x = bx-1; x <= bx+bw; x++) { px(x, by-1, '#445'); px(x, by+bh, '#445'); }
+  for (let y = by; y < by+bh; y++) { px(bx-1, y, '#445'); px(bx+bw, y, '#445'); }
+  const fillW = Math.floor((blade.spin / maxSpin) * bw);
+  for (let y = by; y < by+bh; y++)
+    for (let x = bx; x < bx + bw; x++) {
+      const pct = (x - bx) / bw;
+      px(x, y, x < bx + fillW ? (pct < 0.3 ? '#e33' : pct < 0.6 ? '#ea3' : '#3e3') : '#222');
+    }
+}
+
 function drawHUD() {
   const cx = Math.floor(W / 2);
+  const hudH = (mathMode && mathQuestion) ? 26 : 12;
+
+  // Background
+  for (let y = 0; y < hudH; y++)
+    for (let x = 0; x < W; x++)
+      px(x, y, '#112');
+  for (let x = 0; x < W; x++) px(x, hudH, (mathMode ? '#fa0' : '#334'));
+
+  // === ROW 1: LV# | SPIN BAR | GET/SCORE ===
+  // Left: level
+  drawText('LV' + level, 3, 3, '#3e3');
+
+  // Center: spin bar
+  drawSpinBar(cx - 25, 4, 50, 4);
+
+  // Right: score
+  drawText(collected + '/10', W - 24, 3, '#fa0');
 
   if (mathMode && mathQuestion) {
-    // === MATH MODE HUD (two rows) ===
-    // Background
-    for (let y = 0; y < 26; y++)
-      for (let x = 0; x < W; x++)
-        px(x, y, '#112');
-    for (let x = 0; x < W; x++) px(x, 26, '#fa0');
-
-    // Row 1: LV | Spin bar | Collected
-    drawText('LV' + level, 2, 2, '#3e3');
-    const spinX = cx - 25; const spinW = 50;
-    for (let x = spinX-1; x <= spinX+spinW; x++) { px(x, 2, '#445'); px(x, 7, '#445'); }
-    for (let y = 3; y < 7; y++) { px(spinX-1, y, '#445'); px(spinX+spinW, y, '#445'); }
-    const fillW = Math.floor((blade.spin / maxSpin) * spinW);
-    for (let y = 3; y < 7; y++)
-      for (let x = spinX; x < spinX + spinW; x++) {
-        const pct = (x - spinX) / spinW;
-        px(x, y, x < spinX + fillW ? (pct < 0.3 ? '#e33' : pct < 0.6 ? '#ea3' : '#3e3') : '#222');
-      }
-    drawText(collected + '/10', W - 30, 2, '#fa0');
-
-    // Row 2: SOLVE: equation centered and BIG
-    const eq = mathQuestion.text + '=?';
-    drawText('SOLVE: ' + eq, cx - 28, 12, '#ff4', 2);
+    // === ROW 2: centered equation in yellow ===
+    const eq = 'SOLVE: ' + mathQuestion.text + '=?';
+    const eqW = eq.length * 6; // each char ~6px at scale 1
+    drawText(eq, cx - Math.floor(eqW / 2), 14, '#ff4');
   } else {
-    // === NORMAL HUD (single row) ===
-    for (let y = 0; y < 12; y++)
-      for (let x = 0; x < W; x++)
-        px(x, y, '#112');
-    for (let x = 0; x < W; x++) px(x, 12, '#334');
-
-    drawText('LV' + level, 2, 3, '#3e3');
-    drawText('GET:' + nextNumber, cx - 18, 3, '#5af');
-
-    // Spin bar
-    const spinX = cx + 15; const spinW = 40;
-    for (let x = spinX-1; x <= spinX+spinW; x++) { px(x, 3, '#445'); px(x, 8, '#445'); }
-    for (let y = 4; y < 8; y++) { px(spinX-1, y, '#445'); px(spinX+spinW, y, '#445'); }
-    const fillW = Math.floor((blade.spin / maxSpin) * spinW);
-    for (let y = 4; y < 8; y++)
-      for (let x = spinX; x < spinX + spinW; x++) {
-        const pct = (x - spinX) / spinW;
-        px(x, y, x < spinX + fillW ? (pct < 0.3 ? '#e33' : pct < 0.6 ? '#ea3' : '#3e3') : '#222');
-      }
-    drawText(collected + '/10', W - 30, 3, '#fa0');
+    // Normal mode: show target between LV and spin bar
+    drawText('GET:' + getNextTarget(), cx - 55, 3, '#5af');
   }
 }
 

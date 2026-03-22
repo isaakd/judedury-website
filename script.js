@@ -22,40 +22,39 @@
         bike:      { x: 12.4, y: 20.4, label: 'BIKE' },
         // Valley of Wind (mid-left) -> TENNIS
         tennis:    { x: 14.2, y: 25.9, label: 'TENNIS' },
-        // Porthaven (cliff town) -> CRICKET
-        cricket:   { x: 15.0, y: 16.4, label: 'CRICKET' },
+        // South coast / Sea of Decay area -> CRICKET
+        cricket:   { x: 31.8, y: 41.9, label: 'CRICKET' },
         // Tsukamori Forest / Totoro (bottom-left) -> DINOS
         dino:      { x: 9.0,  y: 44.7, label: 'DINOS' },
-        // Howl's Moving Castle (top-center) -> BEYBLADE
+        // Howl's Moving Castle (center-left) -> BEYBLADE
         beyblade:  { x: 27.7, y: 13.2, label: 'BEYBLADE' },
-        // Iron Town (upper center-right) -> LEGO
-        lego:      { x: 41.9, y: 14.0, label: 'LEGO' },
-        // Nursery School / center crossroads -> START
-        start:     { x: 39.9, y: 35.1, label: '' },
-        // Kiki's House (right side) -> BASEBALL
-        baseball:  { x: 62.1, y: 29.9, label: 'BASEBALL' },
+        // Near Iron Town / Emishi (center-right) -> LEGO
+        lego:      { x: 49.1, y: 14.4, label: 'LEGO' },
+        // Nursery School / center -> START
+        start:     { x: 34.7, y: 31.1, label: '' },
+        // Kiki's House / Howl's Cottage (right) -> BASEBALL
+        baseball:  { x: 60.7, y: 24.0, label: 'BASEBALL' },
         // Koriko City (far right coast) -> CARS
-        hotwheels: { x: 65.0, y: 37.9, label: 'CARS' },
-        // Deserted Town / Clock Tower (far right) -> PHOTOS
-        gallery:   { x: 78.0, y: 16.0, label: 'PHOTOS' },
+        hotwheels: { x: 67.9, y: 35.9, label: 'CARS' },
+        // Deserted Town / Bathhouse (far right) -> PHOTOS
+        gallery:   { x: 76.5, y: 18.0, label: 'PHOTOS' },
     };
 
     // Node connections - paths following Ghibli map geography
     const MAP_EDGES = [
-        // From start (center crossroads)
-        ['start', 'tennis'], ['start', 'baseball'], ['start', 'beyblade'],
-        ['start', 'gallery'],
+        // From start (center)
+        ['start', 'beyblade'], ['start', 'tennis'], ['start', 'cricket'],
+        ['start', 'lego'],
         // Western paths
         ['tennis', 'bike'], ['tennis', 'dino'],
         ['bike', 'movies'],
-        // Northern paths (mountain ridge)
-        ['beyblade', 'lego'], ['beyblade', 'movies'],
-        ['lego', 'cricket'],
-        // Eastern paths (coast)
-        ['baseball', 'hotwheels'], ['baseball', 'cricket'],
-        ['hotwheels', 'cricket'],
-        // Southern paths
-        ['dino', 'gallery'],
+        ['beyblade', 'movies'],
+        // Center to east
+        ['lego', 'baseball'], ['lego', 'beyblade'],
+        ['cricket', 'dino'], ['cricket', 'hotwheels'],
+        // Eastern paths
+        ['baseball', 'hotwheels'], ['baseball', 'gallery'],
+        ['hotwheels', 'gallery'],
     ];
 
     // Build adjacency list

@@ -1146,6 +1146,10 @@ function loop() {
     drawText('DUDES BLADE', Math.floor(W/2) - 33, 20, '#5af', 2);
     drawText('BATTLE', Math.floor(W/2) - 18, 34, '#fa0', 2);
 
+    // Subtitle - credit
+    drawText('A GAME INVENTED &', Math.floor(W/2) - 27, H - 28, '#8af', 1);
+    drawText('CRAFTED BY JUDE', Math.floor(W/2) - 23, H - 22, '#8af', 1);
+
     // Draw Dude winner image on title screen
     if (dudeWinImg.complete && dudeWinImg.naturalWidth) {
       const maxW = canvas.width * 0.35;

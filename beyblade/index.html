@@ -657,6 +657,56 @@ const initialsOverlay = document.getElementById('initials-overlay');
 const initScoreInfo = document.getElementById('init-score-info');
 const initOkBtn = document.getElementById('init-ok-btn');
 
+// ===== MATH CHALLENGE SYSTEM =====
+// Levels 1-2: plain numbers (collect 1-10 in order)
+// Levels 3-5: addition (e.g., "2+3" -> collect 5)
+// Levels 6+: addition & subtraction (e.g., "8-3" -> collect 5)
+
+let mathQuestion = null;  // { text: '2+3', answer: 5 }
+let mathMode = false;
+let mathModeAnnounce = 0; // countdown frames for "MATH MODE!" text
+
+function generateMathQuestion(lvl) {
+  if (lvl < 3) return null; // No math for levels 1-2
+
+  let a, b, op, answer;
+
+  if (lvl <= 5) {
+    // Addition only, small numbers
+    a = Math.floor(Math.random() * 5) + 1;  // 1-5
+    b = Math.floor(Math.random() * 5) + 1;  // 1-5
+    op = '+';
+    answer = a + b;
+  } else {
+    // Addition and subtraction
+    if (Math.random() < 0.5) {
+      // Addition
+      a = Math.floor(Math.random() * 6) + 1;  // 1-6
+      b = Math.floor(Math.random() * 6) + 1;  // 1-6
+      op = '+';
+      answer = a + b;
+    } else {
+      // Subtraction (ensure positive result)
+      answer = Math.floor(Math.random() * 8) + 1; // result 1-8
+      b = Math.floor(Math.random() * 5) + 1;       // subtract 1-5
+      a = answer + b;
+      op = '-';
+    }
+  }
+
+  // Clamp answer to 1-10 range (our number field)
+  if (answer < 1 || answer > 10) return generateMathQuestion(lvl);
+
+  return { text: a + op + b, answer: answer };
+}
+
+function getNextTarget() {
+  if (mathMode && mathQuestion) {
+    return mathQuestion.answer;
+  }
+  return nextNumber;
+}
+
 // ===== SCATTER NUMBERS =====
 function scatterNumbers() {
   numbers = [];
@@ -715,6 +765,11 @@ function startGame(nextLevel) {
   resultTimer = 0;
   pendingResult = null;
   pendingTimer = 0;
+
+  // Math mode starts at level 3
+  mathMode = level >= 3;
+  mathQuestion = mathMode ? generateMathQuestion(level) : null;
+  mathModeAnnounce = (mathMode && level === 3) ? 180 : 0; // Show announcement for ~3 secs
 
   scatterNumbers();
 }
@@ -1082,8 +1137,12 @@ function drawHUD() {
     for (let x = 0; x < W; x++)
       px(x, y, '#112');
 
-  // "NEXT: X"
-  drawText('NEXT:' + nextNumber, 2, 3, '#5af');
+  // "NEXT: X" or math question
+  if (mathMode && mathQuestion) {
+    drawText(mathQuestion.text + '=?', 2, 3, '#fa0');
+  } else {
+    drawText('NEXT:' + nextNumber, 2, 3, '#5af');
+  }
 
   // Spin bar
   const barX = Math.floor(W / 2) - 30;
@@ -1208,24 +1267,31 @@ function loop() {
     }
 
     // Check number collection
+    const target = getNextTarget();
     numbers.forEach(n => {
       if (n.collected || !n.scattered) return;
       const dist = Math.hypot(blade.x - n.x, blade.y - n.y);
       if (dist < blade.radius + s.collectRadius) {
-        if (n.val === nextNumber) {
+        if (n.val === target) {
+          // Correct!
           n.collected = true;
           collected++;
-          nextNumber++;
+          if (mathMode) {
+            // In math mode: generate next question, next sequential number
+            nextNumber++;
+            mathQuestion = (nextNumber <= 10) ? generateMathQuestion(level) : null;
+          } else {
+            nextNumber++;
+          }
           spawnPixelParticles(n.x, n.y, '#5af', 10);
-          // Spin boost - bigger on easy levels
           blade.spin = Math.min(blade.spin + s.spinBoost, maxSpin);
 
           if (collected >= 10 && !pendingResult) {
             pendingResult = 'won';
             pendingTimer = PENDING_DELAY;
           }
-        } else if (n.val > nextNumber) {
-          // Wrong number - tiny penalty
+        } else {
+          // Wrong number - penalty
           spawnPixelParticles(n.x, n.y, '#e33', 5);
           blade.spin = Math.max(blade.spin - s.wrongPenalty, 0);
         }
@@ -1281,6 +1347,18 @@ function loop() {
     }
 
     drawHUD();
+
+    // Math mode announcement
+    if (mathModeAnnounce > 0) {
+      mathModeAnnounce--;
+      const alpha = mathModeAnnounce > 30 ? 1 : mathModeAnnounce / 30;
+      if (alpha > 0.1) {
+        const cy = Math.floor(H * 0.35);
+        drawText('MATH MODE!', Math.floor(W/2) - 30, cy, '#ff4', 2);
+        drawText('SOLVE TO FIND', Math.floor(W/2) - 21, cy + 16, '#8af', 1);
+        drawText('YOUR TARGET!', Math.floor(W/2) - 18, cy + 24, '#8af', 1);
+      }
+    }
   }
 
   if (state === 'won' || state === 'lost') {

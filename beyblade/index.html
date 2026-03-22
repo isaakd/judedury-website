@@ -25,7 +25,7 @@
   }
   #title-buttons {
     position: absolute;
-    bottom: 12%;
+    bottom: 16%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -1201,28 +1201,29 @@ function loop() {
   if (state === 'ready') {
     drawFloor();
 
-    // Title
-    drawText('DUDES BLADE', Math.floor(W/2) - 33, 20, '#5af', 2);
-    drawText('BATTLE', Math.floor(W/2) - 18, 34, '#fa0', 2);
+    // --- TITLE SCREEN LAYOUT (top to bottom) ---
+    // Title at top
+    drawText('DUDES BLADE', Math.floor(W/2) - 33, 10, '#5af', 2);
+    drawText('BATTLE', Math.floor(W/2) - 18, 24, '#fa0', 2);
 
-    // Subtitle - credit
-    drawText('A GAME INVENTED &', Math.floor(W/2) - 27, H - 28, '#8af', 1);
-    drawText('CRAFTED BY JUDE', Math.floor(W/2) - 23, H - 22, '#8af', 1);
-
-    // Draw Dude winner image on title screen
+    // Winner image centered in upper area
     if (dudeWinImg.complete && dudeWinImg.naturalWidth) {
-      const maxW = canvas.width * 0.35;
-      const maxH = canvas.height * 0.35;
+      const maxW = canvas.width * 0.32;
+      const maxH = canvas.height * 0.30;
       const ratio = Math.min(maxW / dudeWinImg.naturalWidth, maxH / dudeWinImg.naturalHeight);
       const iw = dudeWinImg.naturalWidth * ratio;
       const ih = dudeWinImg.naturalHeight * ratio;
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(dudeWinImg, (canvas.width - iw) / 2, 45 * SCALE, iw, ih);
+      ctx.drawImage(dudeWinImg, (canvas.width - iw) / 2, 36 * SCALE, iw, ih);
     }
 
-    // Spinning blade preview
+    // Blade preview just above buttons area
     const bladeFrame = Math.floor(frameCount / 3) % BLADE_FRAMES.length;
-    drawBlade8bit(Math.floor(W/2), H - 75, bladeFrame, true);
+    drawBlade8bit(Math.floor(W/2), H - 68, bladeFrame, true);
+
+    // Credit at very bottom
+    drawText('A GAME INVENTED', Math.floor(W/2) - 23, H - 16, '#668', 1);
+    drawText('& CRAFTED BY JUDE', Math.floor(W/2) - 27, H - 9, '#668', 1);
     return;
   }
 

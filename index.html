@@ -6,7 +6,7 @@
     <title>Jude's World</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>">
 </head>
 <body>
@@ -31,6 +31,21 @@
     <div id="game-world" class="hidden">
         <!-- Background -->
         <img id="world-bg" src="sprites/env/world.png" alt="">
+
+        <!-- Sun -->
+        <div id="sun"><div class="sun-glow"></div></div>
+
+        <!-- Animated Clouds -->
+        <div class="sky-cloud cloud-1"></div>
+        <div class="sky-cloud cloud-2"></div>
+        <div class="sky-cloud cloud-3"></div>
+        <div class="sky-cloud cloud-4"></div>
+        <div class="sky-cloud cloud-5"></div>
+
+        <!-- Birds -->
+        <div class="bird bird-1"><span></span><span></span></div>
+        <div class="bird bird-2"><span></span><span></span></div>
+        <div class="bird bird-3"><span></span><span></span></div>
 
         <!-- Stations (Jude walks up to these) -->
         <div class="station" id="sta-bike" data-name="bike">
@@ -62,7 +77,7 @@
             <div class="station-label">MOVIES</div>
         </div>
         <div class="station" id="sta-gallery" data-name="gallery">
-            <img class="station-icon" src="sprites/gallery.png" alt="Photos">
+            <img class="station-icon" src="sprites/photogallery.png" alt="Photos">
             <div class="station-label">PHOTOS</div>
         </div>
         <div class="station" id="sta-tennis" data-name="tennis">
@@ -149,6 +164,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=7"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>

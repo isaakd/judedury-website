@@ -897,6 +897,10 @@
         renderGallery('photos', photos);
     }
 
+    function isVideo(filename) {
+        return /\.(mp4|mov|webm|avi|m4v)$/i.test(filename);
+    }
+
     function renderGallery(folder, photoList) {
         activeGalleryFolder = folder;
         activeGalleryPhotos = photoList;
@@ -909,7 +913,11 @@
         photoList.forEach((photo, i) => {
             const item = document.createElement('div');
             item.className = 'gallery-item';
-            item.innerHTML = `<img src="${folder}/${photo}" alt="Jude's photo" loading="lazy">`;
+            if (isVideo(photo)) {
+                item.innerHTML = `<video src="${folder}/${photo}" muted preload="metadata" playsinline><\/video><div class="video-badge">&#9654;</div>`;
+            } else {
+                item.innerHTML = `<img src="${folder}/${photo}" alt="Jude's photo" loading="lazy">`;
+            }
             item.addEventListener('click', () => openLightbox(i));
             galleryGrid.appendChild(item);
         });
@@ -917,12 +925,36 @@
 
     function openLightbox(index) {
         currentPhotoIndex = index;
-        lightboxImg.src = `${activeGalleryFolder}/${activeGalleryPhotos[index]}`;
+        const file = activeGalleryPhotos[index];
+        const src = `${activeGalleryFolder}/${file}`;
+
+        // Clear previous content
+        const existingVideo = lightbox.querySelector('.lightbox-video');
+        if (existingVideo) existingVideo.remove();
+
+        if (isVideo(file)) {
+            lightboxImg.style.display = 'none';
+            const video = document.createElement('video');
+            video.className = 'lightbox-video';
+            video.src = src;
+            video.controls = true;
+            video.autoplay = true;
+            video.playsInline = true;
+            video.style.cssText = 'max-width:90vw;max-height:80vh;border-radius:8px;';
+            lightboxImg.parentNode.insertBefore(video, lightboxImg.nextSibling);
+        } else {
+            lightboxImg.style.display = '';
+            lightboxImg.src = src;
+        }
         lightbox.classList.remove('hidden');
     }
 
     function closeLightbox() {
         lightbox.classList.add('hidden');
+        // Stop any playing video
+        const vid = lightbox.querySelector('.lightbox-video');
+        if (vid) { vid.pause(); vid.remove(); }
+        lightboxImg.style.display = '';
     }
 
     // ===== MUSIC (chiptune generated with Web Audio API) =====
@@ -1260,7 +1292,7 @@
         dino:      { img: 'sprites/dino.png',       title: 'Dino Land',       desc: "T-REX is king! Did you know Velociraptors had feathers? Jude's dino knowledge is LEGENDARY." },
         hotwheels: { img: 'sprites/hotwheels.png',  title: 'Hot Wheels',      desc: "ZOOM ZOOM! Loop-de-loops, epic tracks, and the fastest cars in the world. Jude's collection is MASSIVE." },
         lego:      { img: 'sprites/lego.png',       title: 'Lego Workshop',   desc: "Building epic creations brick by brick. Check out Jude's latest Lego masterpieces!", action: 'View Gallery', gallery: 'lego' },
-        gallery:   { img: 'sprites/gallery.png',    title: 'Photo Gallery',   desc: "A collection of Jude's adventures and favorite moments captured on camera.", action: 'View Photos', gallery: 'photos' },
+        gallery:   { img: 'sprites/photogallery.png', title: 'Photo Gallery',  desc: "A collection of Jude's adventures and favorite moments captured on camera.", action: 'View Photos', gallery: 'photos' },
         tennis:    { img: 'sprites/tennis.png',     title: 'Tennis',          desc: "ACE! Game, set, match! Jude's backhand is coming along nicely. New balls please!" },
         cricket:   { img: 'sprites/cricket.png',    title: 'Cricket',         desc: "HOWZAT! Batting, bowling, fielding — he does it all. Six runs over the boundary? No problem!" },
         movies:    { img: 'sprites/movies.png',     title: 'Movies',          desc: "Movie night is the BEST night. Popcorn + couch = perfect combo. Studio Ghibli films are top tier!" },

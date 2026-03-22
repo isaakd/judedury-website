@@ -254,6 +254,117 @@ html, body {
     image-rendering: auto;
 }
 
+/* ===== SUN ===== */
+#sun {
+    position: absolute;
+    top: 6%;
+    right: 14%;
+    width: 60px;
+    height: 60px;
+    z-index: 2;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        #fffef0 0%, #fff8d0 30%, #ffe88a 60%, rgba(255,220,100,0) 100%);
+    box-shadow:
+        0 0 30px rgba(255,240,180,0.8),
+        0 0 60px rgba(255,220,100,0.4),
+        0 0 100px rgba(255,200,80,0.2);
+    animation: sunPulse 4s ease-in-out infinite;
+}
+.sun-glow {
+    position: absolute;
+    inset: -40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,240,180,0.3) 0%, transparent 70%);
+}
+@keyframes sunPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(255,240,180,0.8), 0 0 60px rgba(255,220,100,0.4); }
+    50% { box-shadow: 0 0 40px rgba(255,240,180,0.9), 0 0 80px rgba(255,220,100,0.5); }
+}
+
+/* ===== ANIMATED CLOUDS ===== */
+.sky-cloud {
+    position: absolute;
+    z-index: 2;
+    border-radius: 40px;
+    background: rgba(255, 252, 248, 0.85);
+    pointer-events: none;
+}
+.sky-cloud::before, .sky-cloud::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 252, 248, 0.85);
+    border-radius: 50%;
+}
+
+.cloud-1 { width: 140px; height: 45px; top: 8%; animation: cloudDrift 40s linear infinite; }
+.cloud-1::before { width: 55px; height: 50px; top: -25px; left: 25px; }
+.cloud-1::after { width: 70px; height: 55px; top: -28px; left: 55px; }
+
+.cloud-2 { width: 100px; height: 35px; top: 14%; animation: cloudDrift 55s linear infinite 12s; }
+.cloud-2::before { width: 42px; height: 40px; top: -20px; left: 18px; }
+.cloud-2::after { width: 55px; height: 45px; top: -22px; left: 42px; }
+
+.cloud-3 { width: 120px; height: 40px; top: 5%; animation: cloudDrift 48s linear infinite 25s; }
+.cloud-3::before { width: 48px; height: 45px; top: -22px; left: 22px; }
+.cloud-3::after { width: 62px; height: 50px; top: -25px; left: 50px; }
+
+.cloud-4 { width: 80px; height: 28px; top: 18%; animation: cloudDrift 60s linear infinite 35s; opacity: 0.7; }
+.cloud-4::before { width: 35px; height: 32px; top: -16px; left: 14px; }
+.cloud-4::after { width: 42px; height: 35px; top: -18px; left: 32px; }
+
+.cloud-5 { width: 110px; height: 36px; top: 10%; animation: cloudDrift 45s linear infinite 8s; opacity: 0.8; }
+.cloud-5::before { width: 44px; height: 42px; top: -21px; left: 20px; }
+.cloud-5::after { width: 56px; height: 46px; top: -23px; left: 46px; }
+
+@keyframes cloudDrift {
+    0% { left: -200px; }
+    100% { left: calc(100% + 200px); }
+}
+
+/* ===== BIRDS ===== */
+.bird {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+}
+.bird span {
+    display: block;
+    position: absolute;
+    width: 10px;
+    height: 3px;
+    background: #2a3a4a;
+    border-radius: 50%;
+}
+.bird span:first-child {
+    transform-origin: right center;
+    animation: wingFlap 0.4s ease-in-out infinite alternate;
+    right: 0;
+}
+.bird span:last-child {
+    transform-origin: left center;
+    animation: wingFlap 0.4s ease-in-out infinite alternate-reverse;
+    left: 0;
+}
+@keyframes wingFlap {
+    0% { transform: rotate(-25deg); }
+    100% { transform: rotate(15deg); }
+}
+
+.bird-1 { top: 12%; animation: birdFly 18s linear infinite; }
+.bird-1 span { width: 8px; }
+.bird-2 { top: 8%; animation: birdFly 22s linear infinite 7s; }
+.bird-2 span { width: 6px; height: 2px; }
+.bird-3 { top: 15%; animation: birdFly 25s linear infinite 14s; }
+.bird-3 span { width: 7px; }
+
+@keyframes birdFly {
+    0% { left: -30px; opacity: 0; }
+    5% { opacity: 1; }
+    95% { opacity: 1; }
+    100% { left: calc(100% + 30px); opacity: 0; }
+}
+
 /* ===== STATIONS ===== */
 .station {
     position: absolute;
@@ -1363,10 +1474,29 @@ html, body {
     box-shadow: 0 0 15px rgba(255, 200, 80, 0.15);
 }
 
-.gallery-item img {
+.gallery-item img, .gallery-item video {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.gallery-item { position: relative; }
+
+.video-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    pointer-events: none;
 }
 
 .gallery-empty {

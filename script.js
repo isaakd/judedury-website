@@ -17,27 +17,27 @@
     // Positions measured from actual Ghibli map landmarks
     const MAP_NODES = {
         // Laputa floating island (top-left) -> MOVIES
-        movies:    { x: 5.5,  y: 8.0,  label: 'MOVIES' },
+        movies:    { x: 5.6,  y: 8.0,  label: 'MOVIES' },
         // Pazu's Town (left coast) -> BIKE
-        bike:      { x: 8.0,  y: 20.0, label: 'BIKE' },
+        bike:      { x: 12.4, y: 20.4, label: 'BIKE' },
         // Valley of Wind (mid-left) -> TENNIS
-        tennis:    { x: 10.0, y: 26.0, label: 'TENNIS' },
-        // Emishi Village (upper mountains) -> CRICKET
-        cricket:   { x: 38.0, y: 6.0,  label: 'CRICKET' },
+        tennis:    { x: 14.2, y: 25.9, label: 'TENNIS' },
+        // Porthaven (cliff town) -> CRICKET
+        cricket:   { x: 15.0, y: 16.4, label: 'CRICKET' },
         // Tsukamori Forest / Totoro (bottom-left) -> DINOS
-        dino:      { x: 7.5,  y: 40.0, label: 'DINOS' },
-        // Howl's Castle (top-center) -> BEYBLADE
-        beyblade:  { x: 24.0, y: 11.0, label: 'BEYBLADE' },
+        dino:      { x: 9.0,  y: 44.7, label: 'DINOS' },
+        // Howl's Moving Castle (top-center) -> BEYBLADE
+        beyblade:  { x: 27.7, y: 13.2, label: 'BEYBLADE' },
         // Iron Town (upper center-right) -> LEGO
-        lego:      { x: 33.0, y: 14.0, label: 'LEGO' },
-        // Nursery School / crossroads (center) -> START
-        start:     { x: 30.0, y: 30.0, label: '' },
-        // Kiki's House (right coast) -> BASEBALL
-        baseball:  { x: 52.0, y: 30.0, label: 'BASEBALL' },
-        // Koriko City (far right coast) -> CARS
-        hotwheels: { x: 58.0, y: 38.0, label: 'CARS' },
+        lego:      { x: 33.5, y: 13.6, label: 'LEGO' },
+        // Falling Star / center crossroads -> START
+        start:     { x: 28.9, y: 24.0, label: '' },
+        // Kiki's House (right of center) -> BASEBALL
+        baseball:  { x: 42.2, y: 20.8, label: 'BASEBALL' },
+        // Koriko City (right coast) -> CARS
+        hotwheels: { x: 47.9, y: 27.5, label: 'CARS' },
         // Deserted Town / Clock Tower (far upper-right) -> PHOTOS
-        gallery:   { x: 55.0, y: 12.0, label: 'PHOTOS' },
+        gallery:   { x: 54.0, y: 14.0, label: 'PHOTOS' },
     };
 
     // Node connections - paths following Ghibli map geography
@@ -1254,23 +1254,68 @@
         }
     }
 
+    // Detail card data for each node
+    const detailData = {
+        bike:      { img: 'sprites/bike.png',      title: "Jude's Bike",     desc: "Wind in his curly hair, exploring the neighborhood one pedal at a time. Adventure is always just around the corner!" },
+        baseball:  { img: 'sprites/baseball.png',   title: 'Baseball',        desc: "Swing batter batter SWING! Jude's got a wicked arm and home runs are his specialty." },
+        beyblade:  { img: 'sprites/beyblade.png',   title: 'Beyblade Arena',  desc: "LET IT RIP! Jude is a Beyblade master. His blade spins with the power of a thousand storms!", action: 'Play Game', href: 'beyblade/' },
+        dino:      { img: 'sprites/dino.png',       title: 'Dino Land',       desc: "T-REX is king! Did you know Velociraptors had feathers? Jude's dino knowledge is LEGENDARY." },
+        hotwheels: { img: 'sprites/hotwheels.png',  title: 'Hot Wheels',      desc: "ZOOM ZOOM! Loop-de-loops, epic tracks, and the fastest cars in the world. Jude's collection is MASSIVE." },
+        lego:      { img: 'sprites/lego.png',       title: 'Lego Workshop',   desc: "Building epic creations brick by brick. Check out Jude's latest Lego masterpieces!", action: 'View Gallery', gallery: 'lego' },
+        gallery:   { img: 'sprites/gallery.png',    title: 'Photo Gallery',   desc: "A collection of Jude's adventures and favorite moments captured on camera.", action: 'View Photos', gallery: 'photos' },
+        tennis:    { img: 'sprites/tennis.png',     title: 'Tennis',          desc: "ACE! Game, set, match! Jude's backhand is coming along nicely. New balls please!" },
+        cricket:   { img: 'sprites/cricket.png',    title: 'Cricket',         desc: "HOWZAT! Batting, bowling, fielding — he does it all. Six runs over the boundary? No problem!" },
+        movies:    { img: 'sprites/movies.png',     title: 'Movies',          desc: "Movie night is the BEST night. Popcorn + couch = perfect combo. Studio Ghibli films are top tier!" },
+    };
+
+    function showDetailCard(nodeId) {
+        const data = detailData[nodeId];
+        if (!data) return;
+        const card = document.getElementById('detail-card');
+        document.getElementById('detail-img').src = data.img;
+        document.getElementById('detail-title').textContent = data.title;
+        document.getElementById('detail-desc').textContent = data.desc;
+        const actionBtn = document.getElementById('detail-action');
+        if (data.action) {
+            actionBtn.textContent = data.action;
+            actionBtn.style.display = 'block';
+            if (data.href) {
+                actionBtn.href = data.href;
+                actionBtn.onclick = null;
+            } else if (data.gallery) {
+                actionBtn.href = '#';
+                const gal = data.gallery;
+                actionBtn.onclick = (e) => {
+                    e.preventDefault();
+                    card.classList.add('hidden');
+                    if (gal === 'lego') openLegoGallery();
+                    else openGallery();
+                };
+            }
+        } else {
+            actionBtn.style.display = 'none';
+        }
+        card.classList.remove('hidden');
+    }
+
+    // Close detail card
+    document.getElementById('detail-close').addEventListener('click', () => {
+        document.getElementById('detail-card').classList.add('hidden');
+    });
+
     function interact() {
         if (!gameStarted || isMoving) return;
         if (currentNode === 'start') return;
 
-        const info = objectInfo[currentNode];
-        if (info) {
-            if (info.body === 'gallery') {
-                openGallery();
-            } else if (info.body === 'lego-gallery') {
-                openLegoGallery();
-            } else {
-                openInfo(info.title, info.body);
-            }
-            // Sparkle effect
-            const el = document.getElementById('node-' + currentNode);
-            if (el) createSparkles(el);
-        }
+        // Close any open detail card first
+        document.getElementById('detail-card').classList.add('hidden');
+
+        // Show detail card for the current node
+        showDetailCard(currentNode);
+
+        // Sparkle effect
+        const el = document.getElementById('node-' + currentNode);
+        if (el) createSparkles(el);
     }
 
     function createSparkles(element) {
@@ -1465,6 +1510,7 @@
         if (e.key === 'Escape') {
             closeAllModals();
             speechBubble.classList.add('hidden');
+            document.getElementById('detail-card').classList.add('hidden');
         }
 
         // Arrow keys for map movement
@@ -1510,8 +1556,10 @@
                 renderJude();
                 moveJudeToNode(name, true);
             } else if (name === currentNode) {
-                // Already here - interact
-                interact();
+                // Already here - interact (bypass isMoving check)
+                showDetailCard(currentNode);
+                const el = document.getElementById('node-' + currentNode);
+                if (el) createSparkles(el);
             }
         });
     });

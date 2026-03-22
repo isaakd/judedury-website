@@ -38,47 +38,47 @@
                 <!-- Path canvas drawn by JS -->
                 <canvas id="map-paths"></canvas>
 
-                <!-- Map Nodes -->
+                <!-- Map Nodes (pin markers) -->
                 <div class="map-node" id="node-baseball" data-name="baseball">
-                    <img class="node-icon" src="sprites/baseball.png" alt="Baseball">
+                    <div class="pin"></div>
                     <div class="node-label">BASEBALL</div>
                 </div>
-            <div class="map-node" id="node-tennis" data-name="tennis">
-                <img class="node-icon" src="sprites/tennis.png" alt="Tennis">
-                <div class="node-label">TENNIS</div>
-            </div>
-            <div class="map-node" id="node-cricket" data-name="cricket">
-                <img class="node-icon" src="sprites/cricket.png" alt="Cricket">
-                <div class="node-label">CRICKET</div>
-            </div>
-            <div class="map-node" id="node-bike" data-name="bike">
-                <img class="node-icon" src="sprites/bike.png" alt="Bike">
-                <div class="node-label">BIKE</div>
-            </div>
-            <div class="map-node" id="node-dino" data-name="dino">
-                <img class="node-icon" src="sprites/dino.png" alt="Dinos">
-                <div class="node-label">DINOS</div>
-            </div>
-            <div class="map-node" id="node-beyblade" data-name="beyblade">
-                <img class="node-icon" src="sprites/beyblade.png" alt="Beyblade">
-                <div class="node-label">BEYBLADE</div>
-            </div>
-            <div class="map-node" id="node-hotwheels" data-name="hotwheels">
-                <img class="node-icon" src="sprites/hotwheels.png" alt="Cars">
-                <div class="node-label">CARS</div>
-            </div>
-            <div class="map-node" id="node-lego" data-name="lego">
-                <img class="node-icon" src="sprites/lego.png" alt="Lego">
-                <div class="node-label">LEGO</div>
-            </div>
-            <div class="map-node" id="node-movies" data-name="movies">
-                <img class="node-icon" src="sprites/movies.png" alt="Movies">
-                <div class="node-label">MOVIES</div>
-            </div>
-            <div class="map-node" id="node-gallery" data-name="gallery">
-                <img class="node-icon" src="sprites/gallery.png" alt="Photos">
-                <div class="node-label">PHOTOS</div>
-            </div>
+                <div class="map-node" id="node-tennis" data-name="tennis">
+                    <div class="pin"></div>
+                    <div class="node-label">TENNIS</div>
+                </div>
+                <div class="map-node" id="node-cricket" data-name="cricket">
+                    <div class="pin"></div>
+                    <div class="node-label">CRICKET</div>
+                </div>
+                <div class="map-node" id="node-bike" data-name="bike">
+                    <div class="pin"></div>
+                    <div class="node-label">BIKE</div>
+                </div>
+                <div class="map-node" id="node-dino" data-name="dino">
+                    <div class="pin"></div>
+                    <div class="node-label">DINOS</div>
+                </div>
+                <div class="map-node" id="node-beyblade" data-name="beyblade">
+                    <div class="pin"></div>
+                    <div class="node-label">BEYBLADE</div>
+                </div>
+                <div class="map-node" id="node-hotwheels" data-name="hotwheels">
+                    <div class="pin"></div>
+                    <div class="node-label">CARS</div>
+                </div>
+                <div class="map-node" id="node-lego" data-name="lego">
+                    <div class="pin"></div>
+                    <div class="node-label">LEGO</div>
+                </div>
+                <div class="map-node" id="node-movies" data-name="movies">
+                    <div class="pin"></div>
+                    <div class="node-label">MOVIES</div>
+                </div>
+                <div class="map-node" id="node-gallery" data-name="gallery">
+                    <div class="pin"></div>
+                    <div class="node-label">PHOTOS</div>
+                </div>
 
                 <!-- Jude Character (walks between nodes) -->
                 <div id="jude">
@@ -113,6 +113,15 @@
         <div id="speech-bubble" class="hidden">
             <div id="speech-text"></div>
             <div id="speech-close">&#10005;</div>
+        </div>
+
+        <!-- Detail Card (appears when pin is clicked) -->
+        <div id="detail-card" class="hidden">
+            <button id="detail-close">&#10005;</button>
+            <img id="detail-img" src="" alt="">
+            <h2 id="detail-title"></h2>
+            <p id="detail-desc"></p>
+            <a id="detail-action" class="detail-btn" href="#">Explore</a>
         </div>
     </div>
 

@@ -1028,14 +1028,19 @@
         gameWorld.classList.remove('hidden');
         gameStarted = true;
         judeX = 50;
-        judeY = 65;
+        judeY = 68;
+        isWalking = false;
+        walkTarget = null;
+        keys = {};
         loadPhotos();
         initJudeSprite();
         renderJude();
         positionStations();
         positionJude();
-        showSpeech("Hi! I'm JUDE! Walk around with arrow keys and explore my world. Walk up to something cool and press SPACE!");
-        gameLoop();
+        drawPaths();
+        checkNearbyStation();
+        showSpeech("Hi! I'm JUDE! Click on any station or use arrow keys to explore my world!");
+        requestAnimationFrame(gameLoop);
     }
 
     // Check if environment sprite images exist, fallback to CSS art if not
@@ -1093,7 +1098,18 @@
         drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }
 
-    // ===== FREE ROAMING MOVEMENT =====
+    // ===== STATION CONNECTIONS (paths) =====
+    const PATHS = [
+        ['bike','baseball'],['baseball','beyblade'],['beyblade','dino'],
+        ['dino','hotwheels'],['hotwheels','lego'],['lego','cricket'],
+        ['bike','movies'],['movies','gallery'],['gallery','tennis'],
+        ['tennis','lego'],['beyblade','gallery'],['baseball','movies'],
+        ['dino','tennis'],['hotwheels','cricket'],
+    ];
+
+    // ===== MOVEMENT =====
+    let isWalking = false;
+    let walkTarget = null; // {x, y, stationId}
 
     function positionStations() {
         for (const [id, pos] of Object.entries(STATIONS)) {
@@ -1110,46 +1126,120 @@
         jude.style.top = judeY + '%';
     }
 
-    function checkNearbyStation() {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
-        const jx = judeX / 100 * vw;
-        const jy = judeY / 100 * vh;
+    function drawPaths() {
+        // Draw dotted paths between connected stations using a canvas
+        let canvas = document.getElementById('path-canvas');
+        if (!canvas) {
+            canvas = document.createElement('canvas');
+            canvas.id = 'path-canvas';
+            canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+            gameWorld.insertBefore(canvas, gameWorld.firstChild.nextSibling);
+        }
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = 'rgba(180, 150, 100, 0.4)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.lineCap = 'round';
+
+        PATHS.forEach(([a, b]) => {
+            const sa = STATIONS[a], sb = STATIONS[b];
+            if (!sa || !sb) return;
+            ctx.beginPath();
+            ctx.moveTo(sa.x/100*canvas.width, sa.y/100*canvas.height);
+            ctx.lineTo(sb.x/100*canvas.width, sb.y/100*canvas.height);
+            ctx.stroke();
+        });
+    }
+
+    function findNearestStation() {
         let closest = null;
         let closestDist = Infinity;
-
         for (const [id, pos] of Object.entries(STATIONS)) {
-            const sx = pos.x / 100 * vw;
-            const sy = pos.y / 100 * vh;
-            const dist = Math.sqrt((jx-sx)**2 + (jy-sy)**2);
-            if (dist < INTERACT_DIST && dist < closestDist) {
+            const dx = judeX - pos.x;
+            const dy = judeY - pos.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < closestDist) {
                 closest = id;
                 closestDist = dist;
             }
         }
+        return { id: closest, dist: closestDist };
+    }
 
-        // Update nearby glow
-        document.querySelectorAll('.station').forEach(s => s.classList.remove('nearby'));
-        if (closest) {
-            const el = document.getElementById('sta-' + closest);
-            if (el) el.classList.add('nearby');
+    function checkNearbyStation() {
+        const near = findNearestStation();
+        const prev = nearbyStation;
+        nearbyStation = (near.dist < 6) ? near.id : null;
+        // Update glow
+        if (prev !== nearbyStation) {
+            document.querySelectorAll('.station').forEach(s => s.classList.remove('nearby'));
+            if (nearbyStation) {
+                const el = document.getElementById('sta-' + nearbyStation);
+                if (el) el.classList.add('nearby');
+            }
         }
-        nearbyStation = closest;
+    }
+
+    function walkJudeTo(targetX, targetY, stationId) {
+        if (isWalking) return;
+        isWalking = true;
+        facingLeft = targetX < judeX;
+        renderJude();
+        walkTarget = { x: targetX, y: targetY, stationId: stationId };
     }
 
     function gameLoop() {
-        if (!gameStarted) return;
+        if (!gameStarted) { requestAnimationFrame(gameLoop); return; }
 
         let moved = false;
-        const speed = MOVE_SPEED / window.innerWidth * 100; // Convert px to %
+
+        // Animated walk to target (click-to-walk)
+        if (isWalking && walkTarget) {
+            const dx = walkTarget.x - judeX;
+            const dy = walkTarget.y - judeY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const step = 0.4; // % per frame
+
+            if (dist < step) {
+                judeX = walkTarget.x;
+                judeY = walkTarget.y;
+                isWalking = false;
+                const sid = walkTarget.stationId;
+                walkTarget = null;
+                positionJude();
+                checkNearbyStation();
+                renderJude();
+                // Auto-open detail card when arriving at station
+                if (sid) {
+                    setTimeout(() => showDetailCard(sid), 150);
+                }
+                moved = true;
+            } else {
+                judeX += (dx / dist) * step;
+                judeY += (dy / dist) * step;
+                facingLeft = dx < 0;
+                moved = true;
+            }
+        }
+
+        // Arrow key free movement (overrides walk target)
+        const speed = MOVE_SPEED / window.innerWidth * 100;
         const speedY = MOVE_SPEED / window.innerHeight * 100;
+        let keyMove = false;
 
-        if (keys['ArrowLeft'] || keys['a']) { judeX -= speed; facingLeft = true; moved = true; }
-        if (keys['ArrowRight'] || keys['d']) { judeX += speed; facingLeft = false; moved = true; }
-        if (keys['ArrowUp'] || keys['w']) { judeY -= speedY; moved = true; }
-        if (keys['ArrowDown'] || keys['s']) { judeY += speedY; moved = true; }
+        if (keys['ArrowLeft'] || keys['a']) { judeX -= speed; facingLeft = true; keyMove = true; }
+        if (keys['ArrowRight'] || keys['d']) { judeX += speed; facingLeft = false; keyMove = true; }
+        if (keys['ArrowUp'] || keys['w']) { judeY -= speedY; keyMove = true; }
+        if (keys['ArrowDown'] || keys['s']) { judeY += speedY; keyMove = true; }
 
-        // Clamp to bounds
+        if (keyMove) {
+            isWalking = false; walkTarget = null; // Cancel auto-walk
+            moved = true;
+        }
+
+        // Clamp
         judeX = Math.max(3, Math.min(97, judeX));
         judeY = Math.max(GROUND_TOP, Math.min(GROUND_BOTTOM, judeY));
 
@@ -1418,13 +1508,19 @@
         ctrlAction.addEventListener('touchstart', (e) => { e.preventDefault(); interact(); });
     }
 
-    // Click on stations to interact
+    // Click on stations - walk Jude there, then open detail card
     document.querySelectorAll('.station').forEach(sta => {
         sta.addEventListener('click', () => {
             const name = sta.dataset.name;
+            const pos = STATIONS[name];
+            if (!pos) return;
             if (nearbyStation === name) {
+                // Already here — open immediately
                 showDetailCard(name);
                 createSparkles(sta);
+            } else {
+                // Walk Jude to this station
+                walkJudeTo(pos.x, pos.y, name);
             }
         });
     });
@@ -1483,6 +1579,7 @@
         if (gameStarted) {
             positionStations();
             positionJude();
+            drawPaths();
         }
     });
 

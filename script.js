@@ -7,73 +7,34 @@
     const SPRITE_SCALE = 4;
     const SPRITE_W = 32;
     const SPRITE_H = 40;
+    const MOVE_SPEED = 3; // pixels per frame
+    const INTERACT_DIST = 60; // pixels to trigger interaction
+    const GROUND_TOP = 45; // % from top where ground starts (Jude can't go above)
+    const GROUND_BOTTOM = 92; // % from top where ground ends
 
-    // ===== MAP IMAGE DIMENSIONS =====
-    const MAP_IMG_W = 3462;
-    const MAP_IMG_H = 2505;
-    const MAP_ASPECT = MAP_IMG_W / MAP_IMG_H;
-
-    // ===== MAP NODE LAYOUT (% of MAP IMAGE, not viewport) =====
-    // Positions measured from actual Ghibli map landmarks
-    const MAP_NODES = {
-        // Laputa floating island (top-left) -> MOVIES
-        movies:    { x: 5.6,  y: 8.0,  label: 'MOVIES' },
-        // Pazu's Town (left coast) -> BIKE
-        bike:      { x: 12.4, y: 20.4, label: 'BIKE' },
-        // Valley of Wind (mid-left) -> TENNIS
-        tennis:    { x: 14.2, y: 25.9, label: 'TENNIS' },
-        // South coast / Sea of Decay area -> CRICKET
-        cricket:   { x: 31.8, y: 41.9, label: 'CRICKET' },
-        // Tsukamori Forest / Totoro (bottom-left) -> DINOS
-        dino:      { x: 9.0,  y: 44.7, label: 'DINOS' },
-        // Howl's Moving Castle (center-left) -> BEYBLADE
-        beyblade:  { x: 27.7, y: 13.2, label: 'BEYBLADE' },
-        // Near Iron Town / Emishi (center-right) -> LEGO
-        lego:      { x: 49.1, y: 14.4, label: 'LEGO' },
-        // Nursery School / center -> START
-        start:     { x: 34.7, y: 31.1, label: '' },
-        // Kiki's House / Howl's Cottage (right) -> BASEBALL
-        baseball:  { x: 60.7, y: 24.0, label: 'BASEBALL' },
-        // Koriko City (far right coast) -> CARS
-        hotwheels: { x: 67.9, y: 35.9, label: 'CARS' },
-        // Deserted Town / Bathhouse (far right) -> PHOTOS
-        gallery:   { x: 76.5, y: 18.0, label: 'PHOTOS' },
+    // ===== STATION POSITIONS (% of viewport) =====
+    const STATIONS = {
+        bike:      { x: 8,   y: 58 },
+        baseball:  { x: 22,  y: 52 },
+        beyblade:  { x: 36,  y: 62 },
+        dino:      { x: 50,  y: 54 },
+        hotwheels: { x: 64,  y: 60 },
+        lego:      { x: 78,  y: 52 },
+        movies:    { x: 15,  y: 72 },
+        gallery:   { x: 43,  y: 78 },
+        tennis:    { x: 71,  y: 74 },
+        cricket:   { x: 92,  y: 64 },
     };
-
-    // Node connections - paths following Ghibli map geography
-    const MAP_EDGES = [
-        // From start (center)
-        ['start', 'beyblade'], ['start', 'tennis'], ['start', 'cricket'],
-        ['start', 'lego'],
-        // Western paths
-        ['tennis', 'bike'], ['tennis', 'dino'],
-        ['bike', 'movies'],
-        ['beyblade', 'movies'],
-        // Center to east
-        ['lego', 'baseball'], ['lego', 'beyblade'],
-        ['cricket', 'dino'], ['cricket', 'hotwheels'],
-        // Eastern paths
-        ['baseball', 'hotwheels'], ['baseball', 'gallery'],
-        ['hotwheels', 'gallery'],
-    ];
-
-    // Build adjacency list
-    const adjacency = {};
-    for (const id in MAP_NODES) adjacency[id] = [];
-    MAP_EDGES.forEach(([a, b]) => {
-        if (!adjacency[a].includes(b)) adjacency[a].push(b);
-        if (!adjacency[b].includes(a)) adjacency[b].push(a);
-    });
 
     // ===== STATE =====
     let gameStarted = false;
-    let currentNode = 'start';
-    let isMoving = false;
+    let judeX = 50; // % of viewport
+    let judeY = 65; // % of viewport
     let facingLeft = false;
     let keys = {};
-    let keyCooldown = false;
     let musicPlaying = false;
     let audioCtx = null;
+    let nearbyStation = null;
 
     // ===== PIXEL ART SPRITE DATA =====
     // Color palette
@@ -796,7 +757,7 @@
     const titleScreen = document.getElementById('title-screen');
     const gameWorld = document.getElementById('game-world');
     const startBtn = document.getElementById('start-btn');
-    const mapEl = document.getElementById('map');
+    // const mapEl removed - free roaming, no map container
     const jude = document.getElementById('jude');
     const speechBubble = document.getElementById('speech-bubble');
     const speechText = document.getElementById('speech-text');
@@ -1065,13 +1026,14 @@
         titleScreen.classList.add('hidden');
         gameWorld.classList.remove('hidden');
         gameStarted = true;
-        currentNode = 'start';
+        judeX = 50;
+        judeY = 65;
         loadPhotos();
         initJudeSprite();
         renderJude();
-        positionNodes();
-        drawMapPaths();
-        showSpeech("Hi! I'm JUDE! Use arrow keys to explore my world map. Press SPACE or ENTER on a station to check it out!");
+        positionStations();
+        positionJude();
+        showSpeech("Hi! I'm JUDE! Walk around with arrow keys and explore my world. Walk up to something cool and press SPACE!");
         gameLoop();
     }
 
@@ -1130,130 +1092,76 @@
         drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }
 
-    // ===== MAP SIZING & MOVEMENT =====
+    // ===== FREE ROAMING MOVEMENT =====
 
-    function sizeMap() {
-        // Size #map to cover viewport while maintaining image aspect ratio
-        // This ensures node % positions align with map landmarks
-        const wrapper = document.getElementById('map-wrapper');
-        if (!wrapper) return;
-        const vw = wrapper.clientWidth;
-        const vh = wrapper.clientHeight;
-        const viewAspect = vw / vh;
-
-        const mapEl = document.getElementById('map');
-        if (!mapEl) return;
-
-        let mapW, mapH;
-        if (viewAspect > MAP_ASPECT) {
-            // Viewport is wider than map - match width, map taller than needed
-            mapW = vw;
-            mapH = vw / MAP_ASPECT;
-        } else {
-            // Viewport is taller than map - match height, map wider than needed
-            mapH = vh;
-            mapW = vh * MAP_ASPECT;
-        }
-
-        mapEl.style.width = mapW + 'px';
-        mapEl.style.height = mapH + 'px';
-
-        // Redraw paths at new size
-        drawMapPaths();
-    }
-
-    function positionNodes() {
-        // Size the map container first
-        sizeMap();
-        // Position all map nodes based on % of map image
-        for (const [id, node] of Object.entries(MAP_NODES)) {
-            if (id === 'start') continue; // Start node is invisible
-            const el = document.getElementById('node-' + id);
+    function positionStations() {
+        for (const [id, pos] of Object.entries(STATIONS)) {
+            const el = document.getElementById('sta-' + id);
             if (el) {
-                el.style.left = node.x + '%';
-                el.style.top = node.y + '%';
+                el.style.left = pos.x + '%';
+                el.style.top = pos.y + '%';
             }
         }
-        // Position Jude at current node
-        moveJudeToNode(currentNode, false);
-        highlightCurrentNode();
     }
 
-    function moveJudeToNode(nodeId, animate) {
-        const node = MAP_NODES[nodeId];
-        if (!node) return;
-        if (animate) {
-            jude.style.transition = 'left 0.4s ease-in-out, top 0.4s ease-in-out';
-        } else {
-            jude.style.transition = 'none';
-        }
-        jude.style.left = node.x + '%';
-        jude.style.top = node.y + '%';
-        currentNode = nodeId;
-
-        // Face direction based on movement
-        if (animate) {
-            isMoving = true;
-            setTimeout(() => {
-                isMoving = false;
-                keyCooldown = false;
-                highlightCurrentNode();
-            }, 420);
-        }
+    function positionJude() {
+        jude.style.left = judeX + '%';
+        jude.style.top = judeY + '%';
     }
 
-    function highlightCurrentNode() {
-        document.querySelectorAll('.map-node').forEach(n => n.classList.remove('active'));
-        const el = document.getElementById('node-' + currentNode);
-        if (el) el.classList.add('active');
-    }
+    function checkNearbyStation() {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const jx = judeX / 100 * vw;
+        const jy = judeY / 100 * vh;
+        let closest = null;
+        let closestDist = Infinity;
 
-    function findBestNeighbor(direction) {
-        // Given an arrow direction, find the best connected node to move to
-        const cur = MAP_NODES[currentNode];
-        const neighbors = adjacency[currentNode];
-        if (!neighbors || neighbors.length === 0) return null;
-
-        let best = null;
-        let bestScore = -Infinity;
-
-        neighbors.forEach(nId => {
-            const n = MAP_NODES[nId];
-            const dx = n.x - cur.x;
-            const dy = n.y - cur.y;
-
-            let score = 0;
-            switch (direction) {
-                case 'left':  score = -dx - Math.abs(dy) * 0.5; break;
-                case 'right': score = dx - Math.abs(dy) * 0.5; break;
-                case 'up':    score = -dy - Math.abs(dx) * 0.5; break;
-                case 'down':  score = dy - Math.abs(dx) * 0.5; break;
+        for (const [id, pos] of Object.entries(STATIONS)) {
+            const sx = pos.x / 100 * vw;
+            const sy = pos.y / 100 * vh;
+            const dist = Math.sqrt((jx-sx)**2 + (jy-sy)**2);
+            if (dist < INTERACT_DIST && dist < closestDist) {
+                closest = id;
+                closestDist = dist;
             }
+        }
 
-            if (score > bestScore && score > 0) {
-                bestScore = score;
-                best = nId;
-            }
-        });
-
-        return best;
+        // Update nearby glow
+        document.querySelectorAll('.station').forEach(s => s.classList.remove('nearby'));
+        if (closest) {
+            const el = document.getElementById('sta-' + closest);
+            if (el) el.classList.add('nearby');
+        }
+        nearbyStation = closest;
     }
 
-    function handleMapMove(direction) {
-        if (!gameStarted || isMoving) return;
+    function gameLoop() {
+        if (!gameStarted) return;
 
-        const target = findBestNeighbor(direction);
-        if (target) {
-            keyCooldown = true;
-            const targetNode = MAP_NODES[target];
-            const curNode = MAP_NODES[currentNode];
-            facingLeft = targetNode.x < curNode.x;
+        let moved = false;
+        const speed = MOVE_SPEED / window.innerWidth * 100; // Convert px to %
+        const speedY = MOVE_SPEED / window.innerHeight * 100;
+
+        if (keys['ArrowLeft'] || keys['a']) { judeX -= speed; facingLeft = true; moved = true; }
+        if (keys['ArrowRight'] || keys['d']) { judeX += speed; facingLeft = false; moved = true; }
+        if (keys['ArrowUp'] || keys['w']) { judeY -= speedY; moved = true; }
+        if (keys['ArrowDown'] || keys['s']) { judeY += speedY; moved = true; }
+
+        // Clamp to bounds
+        judeX = Math.max(3, Math.min(97, judeX));
+        judeY = Math.max(GROUND_TOP, Math.min(GROUND_BOTTOM, judeY));
+
+        if (moved) {
+            positionJude();
             renderJude();
-            moveJudeToNode(target, true);
+            checkNearbyStation();
         }
+
+        requestAnimationFrame(gameLoop);
     }
 
-    // Detail card data for each node
+    // Detail card data for each station
     const detailData = {
         bike:      { img: 'sprites/bike.png',      title: "Jude's Bike",     desc: "Wind in his curly hair, exploring the neighborhood one pedal at a time. Adventure is always just around the corner!" },
         baseball:  { img: 'sprites/baseball.png',   title: 'Baseball',        desc: "Swing batter batter SWING! Jude's got a wicked arm and home runs are his specialty." },
@@ -1267,8 +1175,8 @@
         movies:    { img: 'sprites/movies.png',     title: 'Movies',          desc: "Movie night is the BEST night. Popcorn + couch = perfect combo. Studio Ghibli films are top tier!" },
     };
 
-    function showDetailCard(nodeId) {
-        const data = detailData[nodeId];
+    function showDetailCard(stationId) {
+        const data = detailData[stationId];
         if (!data) return;
         const card = document.getElementById('detail-card');
         document.getElementById('detail-img').src = data.img;
@@ -1303,18 +1211,12 @@
     });
 
     function interact() {
-        if (!gameStarted || isMoving) return;
-        if (currentNode === 'start') return;
-
-        // Close any open detail card first
-        document.getElementById('detail-card').classList.add('hidden');
-
-        // Show detail card for the current node
-        showDetailCard(currentNode);
-
-        // Sparkle effect
-        const el = document.getElementById('node-' + currentNode);
-        if (el) createSparkles(el);
+        if (!gameStarted) return;
+        if (nearbyStation) {
+            showDetailCard(nearbyStation);
+            const el = document.getElementById('sta-' + nearbyStation);
+            if (el) createSparkles(el);
+        }
     }
 
     function createSparkles(element) {
@@ -1328,33 +1230,6 @@
             document.body.appendChild(spark);
             setTimeout(() => spark.remove(), 800);
         }
-    }
-
-    function drawMapPaths() {
-        const canvas = document.getElementById('map-paths');
-        if (!canvas) return;
-        const container = canvas.parentElement;
-        canvas.width = container.clientWidth;
-        canvas.height = container.clientHeight;
-        const ctx = canvas.getContext('2d');
-
-        ctx.strokeStyle = 'rgba(210, 180, 120, 0.35)';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 8]);
-        ctx.lineCap = 'round';
-
-        MAP_EDGES.forEach(([a, b]) => {
-            const na = MAP_NODES[a];
-            const nb = MAP_NODES[b];
-            const x1 = na.x / 100 * canvas.width;
-            const y1 = na.y / 100 * canvas.height;
-            const x2 = nb.x / 100 * canvas.width;
-            const y2 = nb.y / 100 * canvas.height;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        });
     }
 
     // ===== FLOATING PARTICLE SYSTEM (Ghibli atmosphere) =====
@@ -1493,8 +1368,12 @@
         startGame();
     });
 
-    // Keyboard - map navigation
+    // Keyboard - continuous movement
     document.addEventListener('keydown', (e) => {
+        keys[e.key] = true;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+        }
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             if (!gameStarted) {
@@ -1505,60 +1384,46 @@
                 interact();
             }
         }
-
         if (e.key === 'Escape') {
             closeAllModals();
             speechBubble.classList.add('hidden');
             document.getElementById('detail-card').classList.add('hidden');
         }
-
-        // Arrow keys for map movement
-        if (!keyCooldown) {
-            if (e.key === 'ArrowLeft' || e.key === 'a') handleMapMove('left');
-            if (e.key === 'ArrowRight' || e.key === 'd') handleMapMove('right');
-            if (e.key === 'ArrowUp' || e.key === 'w') handleMapMove('up');
-            if (e.key === 'ArrowDown' || e.key === 's') handleMapMove('down');
-        }
     });
+    document.addEventListener('keyup', (e) => { keys[e.key] = false; });
 
-    // Mobile D-pad controls
+    // Mobile D-pad controls (hold to move)
     const ctrlLeft = document.getElementById('ctrl-left');
     const ctrlRight = document.getElementById('ctrl-right');
     const ctrlUp = document.getElementById('ctrl-up');
     const ctrlDown = document.getElementById('ctrl-down');
     const ctrlAction = document.getElementById('ctrl-action');
 
-    function addDpadControl(btn, dir) {
+    function addDpadControl(btn, key) {
         if (!btn) return;
-        btn.addEventListener('touchstart', (e) => { e.preventDefault(); handleMapMove(dir); });
-        btn.addEventListener('click', () => handleMapMove(dir));
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
+        btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+        btn.addEventListener('mousedown', () => { keys[key] = true; });
+        btn.addEventListener('mouseup', () => { keys[key] = false; });
+        btn.addEventListener('mouseleave', () => { keys[key] = false; });
     }
 
-    addDpadControl(ctrlLeft, 'left');
-    addDpadControl(ctrlRight, 'right');
-    addDpadControl(ctrlUp, 'up');
-    addDpadControl(ctrlDown, 'down');
+    addDpadControl(ctrlLeft, 'ArrowLeft');
+    addDpadControl(ctrlRight, 'ArrowRight');
+    addDpadControl(ctrlUp, 'ArrowUp');
+    addDpadControl(ctrlDown, 'ArrowDown');
     if (ctrlAction) {
         ctrlAction.addEventListener('click', interact);
         ctrlAction.addEventListener('touchstart', (e) => { e.preventDefault(); interact(); });
     }
 
-    // Click on map nodes to move there (if adjacent)
-    document.querySelectorAll('.map-node').forEach(node => {
-        node.addEventListener('click', () => {
-            const name = node.dataset.name;
-            if (adjacency[currentNode] && adjacency[currentNode].includes(name)) {
-                // Adjacent node - move there
-                const targetNode = MAP_NODES[name];
-                const curNode = MAP_NODES[currentNode];
-                facingLeft = targetNode.x < curNode.x;
-                renderJude();
-                moveJudeToNode(name, true);
-            } else if (name === currentNode) {
-                // Already here - interact (bypass isMoving check)
-                showDetailCard(currentNode);
-                const el = document.getElementById('node-' + currentNode);
-                if (el) createSparkles(el);
+    // Click on stations to interact
+    document.querySelectorAll('.station').forEach(sta => {
+        sta.addEventListener('click', () => {
+            const name = sta.dataset.name;
+            if (nearbyStation === name) {
+                showDetailCard(name);
+                createSparkles(sta);
             }
         });
     });
@@ -1576,9 +1441,8 @@
         titleScreen.classList.remove('hidden');
         speechBubble.classList.add('hidden');
         closeAllModals();
-        currentNode = 'start';
-        isMoving = false;
-        keyCooldown = false;
+        judeX = 50; judeY = 65;
+        keys = {};
     });
 
     // Gallery button in HUD
@@ -1616,8 +1480,8 @@
     // Resize
     window.addEventListener('resize', () => {
         if (gameStarted) {
-            sizeMap();
-            positionNodes();
+            positionStations();
+            positionJude();
         }
     });
 

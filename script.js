@@ -29,15 +29,15 @@
         // Howl's Moving Castle (top-center) -> BEYBLADE
         beyblade:  { x: 27.7, y: 13.2, label: 'BEYBLADE' },
         // Iron Town (upper center-right) -> LEGO
-        lego:      { x: 33.5, y: 13.6, label: 'LEGO' },
-        // Falling Star / center crossroads -> START
-        start:     { x: 28.9, y: 24.0, label: '' },
-        // Kiki's House (right of center) -> BASEBALL
-        baseball:  { x: 42.2, y: 20.8, label: 'BASEBALL' },
-        // Koriko City (right coast) -> CARS
-        hotwheels: { x: 47.9, y: 27.5, label: 'CARS' },
-        // Deserted Town / Clock Tower (far upper-right) -> PHOTOS
-        gallery:   { x: 54.0, y: 14.0, label: 'PHOTOS' },
+        lego:      { x: 41.9, y: 14.0, label: 'LEGO' },
+        // Nursery School / center crossroads -> START
+        start:     { x: 39.9, y: 35.1, label: '' },
+        // Kiki's House (right side) -> BASEBALL
+        baseball:  { x: 62.1, y: 29.9, label: 'BASEBALL' },
+        // Koriko City (far right coast) -> CARS
+        hotwheels: { x: 65.0, y: 37.9, label: 'CARS' },
+        // Deserted Town / Clock Tower (far right) -> PHOTOS
+        gallery:   { x: 78.0, y: 16.0, label: 'PHOTOS' },
     };
 
     // Node connections - paths following Ghibli map geography

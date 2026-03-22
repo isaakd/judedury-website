@@ -672,33 +672,30 @@ let mathModeAnnounce = 0; // countdown frames for "MATH MODE!" text
 function generateMathQuestion(lvl) {
   if (lvl < 3) return null; // No math for levels 1-2
 
-  let a, b, op, answer;
+  // Find which numbers are still available (not yet collected)
+  const available = numbers.filter(n => !n.collected).map(n => n.val);
+  if (available.length === 0) return null;
 
-  if (lvl <= 5) {
-    // Addition only, small numbers
-    a = Math.floor(Math.random() * 5) + 1;  // 1-5
-    b = Math.floor(Math.random() * 5) + 1;  // 1-5
-    op = '+';
-    answer = a + b;
-  } else {
-    // Addition and subtraction
-    if (Math.random() < 0.5) {
-      // Addition
-      a = Math.floor(Math.random() * 6) + 1;  // 1-6
-      b = Math.floor(Math.random() * 6) + 1;  // 1-6
+  // Pick a random available number as the answer
+  const answer = available[Math.floor(Math.random() * available.length)];
+
+  let a, b, op;
+  const maxTries = 20;
+
+  for (let tries = 0; tries < maxTries; tries++) {
+    if (lvl <= 5 || Math.random() < 0.5) {
+      // Addition: a + b = answer
       op = '+';
-      answer = a + b;
+      a = Math.floor(Math.random() * (answer - 1)) + 1; // 1 to answer-1
+      b = answer - a;
     } else {
-      // Subtraction (ensure positive result)
-      answer = Math.floor(Math.random() * 8) + 1; // result 1-8
-      b = Math.floor(Math.random() * 5) + 1;       // subtract 1-5
-      a = answer + b;
+      // Subtraction: a - b = answer
       op = '-';
+      b = Math.floor(Math.random() * 5) + 1; // subtract 1-5
+      a = answer + b;
     }
+    if (a > 0 && b > 0 && a <= 15) break; // valid equation
   }
-
-  // Clamp answer to 1-10 range (our number field)
-  if (answer < 1 || answer > 10) return generateMathQuestion(lvl);
 
   return { text: a + op + b, answer: answer };
 }

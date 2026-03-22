@@ -1132,47 +1132,44 @@ function drawNumber8bit(n) {
 
 // ===== HUD =====
 function drawHUD() {
-  // Top bar background
-  for (let y = 0; y < 12; y++)
+  // Top bar background (taller for math mode)
+  const barH = mathMode ? 24 : 12;
+  for (let y = 0; y < barH; y++)
     for (let x = 0; x < W; x++)
       px(x, y, '#112');
+  // Bottom border
+  for (let x = 0; x < W; x++) px(x, barH, '#334');
 
-  // "NEXT: X" or math question
-  if (mathMode && mathQuestion) {
-    drawText(mathQuestion.text + '=?', 2, 3, '#fa0');
-  } else {
-    drawText('NEXT:' + nextNumber, 2, 3, '#5af');
-  }
+  // Row 1: Level | Spin Bar | Score
+  drawText('LV' + level, 2, 3, '#3e3');
 
-  // Spin bar
-  const barX = Math.floor(W / 2) - 30;
-  const barW = 60;
-  const barY = 4;
-  const barH = 4;
-  // Border
-  for (let x = barX-1; x <= barX+barW; x++) {
-    px(x, barY-1, '#445');
-    px(x, barY+barH, '#445');
-  }
-  for (let y = barY; y < barY+barH; y++) {
-    px(barX-1, y, '#445');
-    px(barX+barW, y, '#445');
-  }
-  // Fill
-  const fillW = Math.floor((blade.spin / maxSpin) * barW);
-  for (let y = barY; y < barY+barH; y++)
-    for (let x = barX; x < barX + barW; x++) {
-      if (x < barX + fillW) {
-        const pct = (x - barX) / barW;
+  // Spin bar (centered)
+  const spinX = Math.floor(W / 2) - 30;
+  const spinW = 60;
+  const spinY = 4;
+  const spinH = 4;
+  for (let x = spinX-1; x <= spinX+spinW; x++) { px(x, spinY-1, '#445'); px(x, spinY+spinH, '#445'); }
+  for (let y = spinY; y < spinY+spinH; y++) { px(spinX-1, y, '#445'); px(spinX+spinW, y, '#445'); }
+  const fillW = Math.floor((blade.spin / maxSpin) * spinW);
+  for (let y = spinY; y < spinY+spinH; y++)
+    for (let x = spinX; x < spinX + spinW; x++) {
+      if (x < spinX + fillW) {
+        const pct = (x - spinX) / spinW;
         px(x, y, pct < 0.3 ? '#e33' : pct < 0.6 ? '#ea3' : '#3e3');
-      } else {
-        px(x, y, '#222');
-      }
+      } else { px(x, y, '#222'); }
     }
 
-  // Level and score
-  drawText('LV' + level, W - 55, 3, '#3e3');
   drawText(collected + '/10', W - 30, 3, '#fa0');
+
+  // Row 2 (math mode only): centered equation
+  if (mathMode && mathQuestion) {
+    const eq = mathQuestion.text + ' = ?';
+    const eqLen = eq.length * 7; // approx width at scale 1
+    drawText(eq, Math.floor(W/2) - Math.floor(eqLen/2), 14, '#ff4', 1);
+  } else {
+    // Non-math: show NEXT target on row 1
+    drawText('GET:' + nextNumber, Math.floor(W/2) + 35, 3, '#5af');
+  }
 }
 
 // ===== DRAW ARENA FLOOR (8-bit style) =====
@@ -1381,27 +1378,7 @@ function loop() {
 
     drawHUD();
 
-    // Math mode: show equation prominently at top of screen
-    if (mathMode && mathQuestion && !pendingResult) {
-      const eqY = 16; // Just below HUD bar
-      const eqX = Math.floor(W / 2);
-      // Background banner
-      for (let dy = 0; dy < 14; dy++)
-        for (let dx = -40; dx <= 40; dx++)
-          px(eqX + dx, eqY + dy, 'rgba(0,0,30,0.8)');
-      // Border
-      for (let dx = -41; dx <= 41; dx++) {
-        px(eqX + dx, eqY - 1, '#fa0');
-        px(eqX + dx, eqY + 14, '#fa0');
-      }
-      for (let dy = 0; dy < 14; dy++) {
-        px(eqX - 41, eqY + dy, '#fa0');
-        px(eqX + 41, eqY + dy, '#fa0');
-      }
-      // Equation text - BIG
-      drawText('SOLVE:', eqX - 35, eqY + 2, '#8af', 1);
-      drawText(mathQuestion.text + '=?', eqX - 10, eqY + 2, '#ff4', 2);
-    }
+    // (Math equation is shown in the HUD bar)
 
     // Math mode announcement
     if (mathModeAnnounce > 0) {

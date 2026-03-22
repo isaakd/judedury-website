@@ -4,24 +4,54 @@
     'use strict';
 
     // ===== CONFIG =====
-    const WORLD_WIDTH = 3500;
-    const MOVE_SPEED = 4;
-    const INTERACTION_DISTANCE = 80;
-    const SPRITE_SCALE = 4; // each pixel in our sprite grid = 4px on canvas
-    const SPRITE_W = 32;    // sprite grid width
-    const SPRITE_H = 40;    // sprite grid height
+    const SPRITE_SCALE = 4;
+    const SPRITE_W = 32;
+    const SPRITE_H = 40;
+
+    // ===== MAP NODE LAYOUT (% positions on the map) =====
+    const MAP_NODES = {
+        start:    { x: 50,  y: 62, label: '' },
+        baseball: { x: 28,  y: 44, label: 'BASEBALL' },
+        tennis:   { x: 22,  y: 56, label: 'TENNIS' },
+        cricket:  { x: 34,  y: 62, label: 'CRICKET' },
+        bike:     { x: 46,  y: 42, label: 'BIKE' },
+        dino:     { x: 56,  y: 35, label: 'DINOS' },
+        beyblade: { x: 67,  y: 44, label: 'BEYBLADE' },
+        hotwheels:{ x: 72,  y: 56, label: 'CARS' },
+        lego:     { x: 64,  y: 65, label: 'LEGO' },
+        movies:   { x: 56,  y: 72, label: 'MOVIES' },
+        gallery:  { x: 40,  y: 72, label: 'PHOTOS' },
+    };
+
+    // Node connections (which nodes connect to which)
+    const MAP_EDGES = [
+        ['start', 'cricket'], ['start', 'gallery'], ['start', 'movies'],
+        ['start', 'bike'],
+        ['cricket', 'baseball'], ['cricket', 'tennis'],
+        ['baseball', 'tennis'],
+        ['bike', 'dino'],
+        ['dino', 'beyblade'],
+        ['beyblade', 'hotwheels'],
+        ['hotwheels', 'lego'],
+        ['lego', 'movies'],
+        ['gallery', 'tennis'],
+    ];
+
+    // Build adjacency list
+    const adjacency = {};
+    for (const id in MAP_NODES) adjacency[id] = [];
+    MAP_EDGES.forEach(([a, b]) => {
+        if (!adjacency[a].includes(b)) adjacency[a].push(b);
+        if (!adjacency[b].includes(a)) adjacency[b].push(a);
+    });
 
     // ===== STATE =====
     let gameStarted = false;
-    let judeX = 100;
-    let cameraX = 0;
-    let viewportWidth = window.innerWidth;
+    let currentNode = 'start';
+    let isMoving = false;
     let facingLeft = false;
-    let isWalking = false;
-    let walkFrame = 0;
-    let walkTimer = 0;
     let keys = {};
-    let nearbyObject = null;
+    let keyCooldown = false;
     let musicPlaying = false;
     let audioCtx = null;
 
@@ -746,7 +776,7 @@
     const titleScreen = document.getElementById('title-screen');
     const gameWorld = document.getElementById('game-world');
     const startBtn = document.getElementById('start-btn');
-    const ground = document.getElementById('ground');
+    const mapEl = document.getElementById('map');
     const jude = document.getElementById('jude');
     const speechBubble = document.getElementById('speech-bubble');
     const speechText = document.getElementById('speech-text');
@@ -764,11 +794,6 @@
     const infoModal = document.getElementById('info-modal');
     const infoTitle = document.getElementById('info-title');
     const infoBody = document.getElementById('info-body');
-
-    // Mobile controls
-    const ctrlLeft = document.getElementById('ctrl-left');
-    const ctrlRight = document.getElementById('ctrl-right');
-    const ctrlAction = document.getElementById('ctrl-action');
 
     // ===== OBJECT DATA =====
     const objectInfo = {
@@ -1020,13 +1045,13 @@
         titleScreen.classList.add('hidden');
         gameWorld.classList.remove('hidden');
         gameStarted = true;
+        currentNode = 'start';
         loadPhotos();
         initJudeSprite();
-        renderJude(); // Draw initial sprite
-        renderAllIcons(); // Draw all world object icons
-        checkEnvSprites(); // Fallback to CSS if env sprites missing
-        updateCamera();
-        showSpeech("Hi! I'm JUDE! Use \u2190 \u2192 arrow keys to explore my world. Walk up to things and press SPACE or ENTER!");
+        renderJude();
+        positionNodes();
+        drawMapPaths();
+        showSpeech("Hi! I'm JUDE! Use arrow keys to explore my world map. Press SPACE or ENTER on a station to check it out!");
         gameLoop();
     }
 
@@ -1085,92 +1110,113 @@
         drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }
 
-    // ===== MOVEMENT =====
-    function updateJude() {
-        if (!gameStarted) return;
+    // ===== MAP MOVEMENT =====
 
-        let moving = false;
-
-        if (keys['ArrowLeft'] || keys['a'] || keys['mobileLeft']) {
-            judeX = Math.max(20, judeX - MOVE_SPEED);
-            facingLeft = true;
-            moving = true;
-        }
-        if (keys['ArrowRight'] || keys['d'] || keys['mobileRight']) {
-            judeX = Math.min(WORLD_WIDTH - 60, judeX + MOVE_SPEED);
-            facingLeft = false;
-            moving = true;
-        }
-
-        isWalking = moving;
-
-        // Walk animation cycle
-        if (moving) {
-            walkTimer++;
-            if (walkTimer >= 8) { // change frame every 8 ticks
-                walkTimer = 0;
-                walkFrame = (walkFrame + 1) % 4;
+    function positionNodes() {
+        // Position all map nodes based on % coordinates
+        for (const [id, node] of Object.entries(MAP_NODES)) {
+            if (id === 'start') continue; // Start node is invisible
+            const el = document.getElementById('node-' + id);
+            if (el) {
+                el.style.left = node.x + '%';
+                el.style.top = node.y + '%';
             }
-        } else {
-            walkFrame = 0;
-            walkTimer = 0;
         }
-
-        renderJude();
-
-        jude.style.left = judeX + 'px';
-        updateCamera();
-        checkNearby();
+        // Position Jude at current node
+        moveJudeToNode(currentNode, false);
+        highlightCurrentNode();
     }
 
-    function updateCamera() {
-        viewportWidth = window.innerWidth;
-        // Keep Jude roughly centered
-        let targetCam = judeX - viewportWidth / 2 + 24;
-        targetCam = Math.max(0, Math.min(targetCam, WORLD_WIDTH - viewportWidth));
-        cameraX += (targetCam - cameraX) * 0.1;
-        ground.style.transform = `translateX(${-cameraX}px)`;
+    function moveJudeToNode(nodeId, animate) {
+        const node = MAP_NODES[nodeId];
+        if (!node) return;
+        if (animate) {
+            jude.style.transition = 'left 0.4s ease-in-out, top 0.4s ease-in-out';
+        } else {
+            jude.style.transition = 'none';
+        }
+        jude.style.left = node.x + '%';
+        jude.style.top = node.y + '%';
+        currentNode = nodeId;
+
+        // Face direction based on movement
+        if (animate) {
+            isMoving = true;
+            setTimeout(() => {
+                isMoving = false;
+                keyCooldown = false;
+                highlightCurrentNode();
+            }, 420);
+        }
     }
 
-    function checkNearby() {
-        const objects = document.querySelectorAll('.world-object');
-        let closest = null;
-        let closestDist = Infinity;
+    function highlightCurrentNode() {
+        document.querySelectorAll('.map-node').forEach(n => n.classList.remove('active'));
+        const el = document.getElementById('node-' + currentNode);
+        if (el) el.classList.add('active');
+    }
 
-        objects.forEach(obj => {
-            const objLeft = obj.offsetLeft;
-            const dist = Math.abs(judeX + 24 - objLeft - 24);
-            obj.classList.remove('nearby');
+    function findBestNeighbor(direction) {
+        // Given an arrow direction, find the best connected node to move to
+        const cur = MAP_NODES[currentNode];
+        const neighbors = adjacency[currentNode];
+        if (!neighbors || neighbors.length === 0) return null;
 
-            if (dist < INTERACTION_DISTANCE && dist < closestDist) {
-                closest = obj;
-                closestDist = dist;
+        let best = null;
+        let bestScore = -Infinity;
+
+        neighbors.forEach(nId => {
+            const n = MAP_NODES[nId];
+            const dx = n.x - cur.x;
+            const dy = n.y - cur.y;
+
+            let score = 0;
+            switch (direction) {
+                case 'left':  score = -dx - Math.abs(dy) * 0.5; break;
+                case 'right': score = dx - Math.abs(dy) * 0.5; break;
+                case 'up':    score = -dy - Math.abs(dx) * 0.5; break;
+                case 'down':  score = dy - Math.abs(dx) * 0.5; break;
+            }
+
+            if (score > bestScore && score > 0) {
+                bestScore = score;
+                best = nId;
             }
         });
 
-        if (closest) {
-            closest.classList.add('nearby');
-            nearbyObject = closest;
-        } else {
-            nearbyObject = null;
+        return best;
+    }
+
+    function handleMapMove(direction) {
+        if (!gameStarted || isMoving) return;
+
+        const target = findBestNeighbor(direction);
+        if (target) {
+            keyCooldown = true;
+            const targetNode = MAP_NODES[target];
+            const curNode = MAP_NODES[currentNode];
+            facingLeft = targetNode.x < curNode.x;
+            renderJude();
+            moveJudeToNode(target, true);
         }
     }
 
     function interact() {
-        if (nearbyObject) {
-            const name = nearbyObject.dataset.name;
-            const info = objectInfo[name];
-            if (info) {
-                if (info.body === 'gallery') {
-                    openGallery();
-                } else if (info.body === 'lego-gallery') {
-                    openLegoGallery();
-                } else {
-                    openInfo(info.title, info.body);
-                }
-                // Sparkle effect
-                createSparkles(nearbyObject);
+        if (!gameStarted || isMoving) return;
+        if (currentNode === 'start') return;
+
+        const info = objectInfo[currentNode];
+        if (info) {
+            if (info.body === 'gallery') {
+                openGallery();
+            } else if (info.body === 'lego-gallery') {
+                openLegoGallery();
+            } else {
+                openInfo(info.title, info.body);
             }
+            // Sparkle effect
+            const el = document.getElementById('node-' + currentNode);
+            if (el) createSparkles(el);
         }
     }
 
@@ -1185,6 +1231,33 @@
             document.body.appendChild(spark);
             setTimeout(() => spark.remove(), 800);
         }
+    }
+
+    function drawMapPaths() {
+        const canvas = document.getElementById('map-paths');
+        if (!canvas) return;
+        const container = canvas.parentElement;
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        const ctx = canvas.getContext('2d');
+
+        ctx.strokeStyle = 'rgba(210, 180, 120, 0.7)';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([8, 6]);
+        ctx.lineCap = 'round';
+
+        MAP_EDGES.forEach(([a, b]) => {
+            const na = MAP_NODES[a];
+            const nb = MAP_NODES[b];
+            const x1 = na.x / 100 * canvas.width;
+            const y1 = na.y / 100 * canvas.height;
+            const x2 = nb.x / 100 * canvas.width;
+            const y2 = nb.y / 100 * canvas.height;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        });
     }
 
     // ===== FLOATING PARTICLE SYSTEM (Ghibli atmosphere) =====
@@ -1310,8 +1383,8 @@
 
     // ===== GAME LOOP =====
     function gameLoop() {
-        updateJude();
-        updateParticles();
+        // Map-based: movement is event-driven, not per-frame
+        // Just keep animation frame for any future effects
         requestAnimationFrame(gameLoop);
     }
 
@@ -1323,10 +1396,8 @@
         startGame();
     });
 
-    // Keyboard
+    // Keyboard - map navigation
     document.addEventListener('keydown', (e) => {
-        keys[e.key] = true;
-
         if (e.key === ' ' || e.key === 'Enter') {
             e.preventDefault();
             if (!gameStarted) {
@@ -1342,49 +1413,52 @@
             closeAllModals();
             speechBubble.classList.add('hidden');
         }
+
+        // Arrow keys for map movement
+        if (!keyCooldown) {
+            if (e.key === 'ArrowLeft' || e.key === 'a') handleMapMove('left');
+            if (e.key === 'ArrowRight' || e.key === 'd') handleMapMove('right');
+            if (e.key === 'ArrowUp' || e.key === 'w') handleMapMove('up');
+            if (e.key === 'ArrowDown' || e.key === 's') handleMapMove('down');
+        }
     });
 
-    document.addEventListener('keyup', (e) => {
-        keys[e.key] = false;
-    });
+    // Mobile D-pad controls
+    const ctrlLeft = document.getElementById('ctrl-left');
+    const ctrlRight = document.getElementById('ctrl-right');
+    const ctrlUp = document.getElementById('ctrl-up');
+    const ctrlDown = document.getElementById('ctrl-down');
+    const ctrlAction = document.getElementById('ctrl-action');
 
-    // Mobile controls
-    function addMobileControl(btn, key) {
-        btn.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            keys[key] = true;
-        });
-        btn.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            keys[key] = false;
-        });
-        btn.addEventListener('mousedown', () => keys[key] = true);
-        btn.addEventListener('mouseup', () => keys[key] = false);
-        btn.addEventListener('mouseleave', () => keys[key] = false);
+    function addDpadControl(btn, dir) {
+        if (!btn) return;
+        btn.addEventListener('touchstart', (e) => { e.preventDefault(); handleMapMove(dir); });
+        btn.addEventListener('click', () => handleMapMove(dir));
     }
 
-    addMobileControl(ctrlLeft, 'mobileLeft');
-    addMobileControl(ctrlRight, 'mobileRight');
-    ctrlAction.addEventListener('click', interact);
-    ctrlAction.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        interact();
-    });
+    addDpadControl(ctrlLeft, 'left');
+    addDpadControl(ctrlRight, 'right');
+    addDpadControl(ctrlUp, 'up');
+    addDpadControl(ctrlDown, 'down');
+    if (ctrlAction) {
+        ctrlAction.addEventListener('click', interact);
+        ctrlAction.addEventListener('touchstart', (e) => { e.preventDefault(); interact(); });
+    }
 
-    // Click on objects
-    document.querySelectorAll('.world-object').forEach(obj => {
-        obj.addEventListener('click', () => {
-            const name = obj.dataset.name;
-            const info = objectInfo[name];
-            if (info) {
-                if (info.body === 'gallery') {
-                    openGallery();
-                } else if (info.body === 'lego-gallery') {
-                    openLegoGallery();
-                } else {
-                    openInfo(info.title, info.body);
-                }
-                createSparkles(obj);
+    // Click on map nodes to move there (if adjacent)
+    document.querySelectorAll('.map-node').forEach(node => {
+        node.addEventListener('click', () => {
+            const name = node.dataset.name;
+            if (adjacency[currentNode] && adjacency[currentNode].includes(name)) {
+                // Adjacent node - move there
+                const targetNode = MAP_NODES[name];
+                const curNode = MAP_NODES[currentNode];
+                facingLeft = targetNode.x < curNode.x;
+                renderJude();
+                moveJudeToNode(name, true);
+            } else if (name === currentNode) {
+                // Already here - interact
+                interact();
             }
         });
     });
@@ -1402,10 +1476,9 @@
         titleScreen.classList.remove('hidden');
         speechBubble.classList.add('hidden');
         closeAllModals();
-        // Reset position
-        judeX = 100;
-        cameraX = 0;
-        keys = {};
+        currentNode = 'start';
+        isMoving = false;
+        keyCooldown = false;
     });
 
     // Gallery button in HUD
@@ -1442,7 +1515,7 @@
 
     // Resize
     window.addEventListener('resize', () => {
-        viewportWidth = window.innerWidth;
+        if (gameStarted) drawMapPaths();
     });
 
     // Arrow keys for lightbox navigation

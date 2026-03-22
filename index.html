@@ -6,7 +6,7 @@
     <title>Jude's World</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌟</text></svg>">
 </head>
 <body>
@@ -27,141 +27,64 @@
         <div class="title-ground"></div>
     </div>
 
-    <!-- Game World -->
+    <!-- Game World - Mario-style Overworld Map -->
     <div id="game-world" class="hidden">
-        <!-- Pixel art background -->
-        <img id="game-bg" src="sprites/env/background.png" alt="">
+        <!-- Map Background -->
+        <img id="map-bg" src="sprites/env/map.png" alt="">
 
-        <!-- Sky & Scenery -->
-        <div id="sky">
-            <div class="sun"></div>
-            <div class="cloud game-cloud gc-1"></div>
-            <div class="cloud game-cloud gc-2"></div>
-            <div class="cloud game-cloud gc-3"></div>
-            <div class="cloud game-cloud gc-4"></div>
-            <div class="bird bird-1"></div>
-            <div class="bird bird-2"></div>
-        </div>
+        <!-- Map Container (all nodes positioned inside) -->
+        <div id="map">
+            <!-- Path canvas drawn by JS -->
+            <canvas id="map-paths" width="960" height="540"></canvas>
 
-        <!-- Parallax Hills -->
-        <div id="hills">
-            <div class="hill hill-back"></div>
-            <div class="hill hill-mid"></div>
-            <div class="hill hill-front"></div>
-        </div>
-
-        <!-- Ground Layer -->
-        <div id="ground">
-
-            <!-- ===== AREA 1: SPORTS FIELD ===== -->
-            <div class="area-sign" id="sign-sports">
-                <div class="sign-text">SPORTS FIELD</div>
+            <!-- Map Nodes -->
+            <div class="map-node" id="node-baseball" data-name="baseball">
+                <img class="node-icon" src="sprites/baseball.png" alt="Baseball">
+                <div class="node-label">BASEBALL</div>
             </div>
-            <div class="world-object" id="obj-baseball" data-name="baseball" title="Baseball">
-                <div class="sprite-container" data-icon="baseball">
-                    <img class="obj-sprite sprite-img" src="sprites/baseball.png" alt="Baseball">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">BASEBALL</div>
+            <div class="map-node" id="node-tennis" data-name="tennis">
+                <img class="node-icon" src="sprites/tennis.png" alt="Tennis">
+                <div class="node-label">TENNIS</div>
             </div>
-            <div class="world-object" id="obj-tennis" data-name="tennis" title="Tennis">
-                <div class="sprite-container" data-icon="tennis">
-                    <img class="obj-sprite sprite-img" src="sprites/tennis.png" alt="Tennis">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">TENNIS</div>
+            <div class="map-node" id="node-cricket" data-name="cricket">
+                <img class="node-icon" src="sprites/cricket.png" alt="Cricket">
+                <div class="node-label">CRICKET</div>
             </div>
-            <div class="world-object" id="obj-cricket" data-name="cricket" title="Cricket">
-                <div class="sprite-container" data-icon="cricket">
-                    <img class="obj-sprite sprite-img" src="sprites/cricket.png" alt="Cricket">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">CRICKET</div>
+            <div class="map-node" id="node-bike" data-name="bike">
+                <img class="node-icon" src="sprites/bike.png" alt="Bike">
+                <div class="node-label">BIKE</div>
             </div>
-
-            <!-- Area separator -->
-            <div class="area-separator sep-1"></div>
-
-            <!-- ===== AREA 2: ADVENTURE ZONE ===== -->
-            <div class="area-sign" id="sign-adventure">
-                <div class="sign-text">ADVENTURE</div>
+            <div class="map-node" id="node-dino" data-name="dino">
+                <img class="node-icon" src="sprites/dino.png" alt="Dinos">
+                <div class="node-label">DINOS</div>
             </div>
-            <div class="world-object" id="obj-bike" data-name="bike" title="Jude's Bike">
-                <div class="sprite-container" data-icon="bike">
-                    <img class="obj-sprite sprite-img" src="sprites/bike.png" alt="Bike">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">BIKE</div>
+            <div class="map-node" id="node-beyblade" data-name="beyblade">
+                <img class="node-icon" src="sprites/beyblade.png" alt="Beyblade">
+                <div class="node-label">BEYBLADE</div>
             </div>
-            <div class="world-object" id="obj-dino" data-name="dino" title="Dino Land">
-                <div class="sprite-container" data-icon="dino">
-                    <img class="obj-sprite sprite-img" src="sprites/dino.png" alt="Dinos">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">DINOS</div>
+            <div class="map-node" id="node-hotwheels" data-name="hotwheels">
+                <img class="node-icon" src="sprites/hotwheels.png" alt="Cars">
+                <div class="node-label">CARS</div>
+            </div>
+            <div class="map-node" id="node-lego" data-name="lego">
+                <img class="node-icon" src="sprites/lego.png" alt="Lego">
+                <div class="node-label">LEGO</div>
+            </div>
+            <div class="map-node" id="node-movies" data-name="movies">
+                <img class="node-icon" src="sprites/movies.png" alt="Movies">
+                <div class="node-label">MOVIES</div>
+            </div>
+            <div class="map-node" id="node-gallery" data-name="gallery">
+                <img class="node-icon" src="sprites/gallery.png" alt="Photos">
+                <div class="node-label">PHOTOS</div>
             </div>
 
-            <!-- Area separator -->
-            <div class="area-separator sep-2"></div>
-
-            <!-- ===== AREA 3: TOY WORKSHOP ===== -->
-            <div class="area-sign" id="sign-toys">
-                <div class="sign-text">TOY WORKSHOP</div>
-            </div>
-            <div class="world-object" id="obj-beyblade" data-name="beyblade" title="Beyblade Arena">
-                <div class="sprite-container" data-icon="beyblade">
-                    <img class="obj-sprite sprite-img" src="sprites/beyblade.png" alt="Beyblade">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">BEYBLADE</div>
-            </div>
-            <div class="world-object" id="obj-hotwheels" data-name="hotwheels" title="Hot Wheels">
-                <div class="sprite-container" data-icon="hotwheels">
-                    <img class="obj-sprite sprite-img" src="sprites/hotwheels.png" alt="Cars">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">CARS</div>
-            </div>
-            <div class="world-object" id="obj-lego" data-name="lego" title="Lego Workshop">
-                <div class="sprite-container" data-icon="lego">
-                    <img class="obj-sprite sprite-img" src="sprites/lego.png" alt="Lego">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">LEGO</div>
-            </div>
-
-            <!-- Area separator -->
-            <div class="area-separator sep-3"></div>
-
-            <!-- ===== AREA 4: FUN CORNER ===== -->
-            <div class="area-sign" id="sign-fun">
-                <div class="sign-text">FUN CORNER</div>
-            </div>
-            <div class="world-object" id="obj-movies" data-name="movies" title="Movies">
-                <div class="sprite-container" data-icon="movies">
-                    <img class="obj-sprite sprite-img" src="sprites/movies.png" alt="Movies">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">MOVIES</div>
-            </div>
-            <div class="world-object" id="obj-gallery" data-name="gallery" title="Photo Gallery">
-                <div class="sprite-container" data-icon="gallery">
-                    <img class="obj-sprite sprite-img" src="sprites/gallery.png" alt="Photos">
-                    <canvas class="obj-sprite sprite-fallback hidden" width="144" height="144"></canvas>
-                </div>
-                <div class="obj-label">PHOTOS</div>
-            </div>
-
-            <!-- Jude Character -->
+            <!-- Jude Character (walks between nodes) -->
             <div id="jude">
                 <img id="jude-img" class="jude-sprite" src="sprites/jude.png" alt="Jude">
                 <canvas id="jude-sprite" class="jude-sprite hidden" width="128" height="160"></canvas>
-                <div id="jude-name">JUDE</div>
             </div>
         </div>
-
-        <!-- Ground Tiles -->
-        <div id="ground-tiles"></div>
 
         <!-- HUD -->
         <div id="hud">
@@ -175,10 +98,12 @@
             </div>
         </div>
 
-        <!-- Mobile Controls -->
+        <!-- Mobile D-Pad -->
         <div id="mobile-controls">
+            <button class="ctrl-btn" id="ctrl-up">&#9650;</button>
             <button class="ctrl-btn" id="ctrl-left">&#9664;</button>
             <button class="ctrl-btn" id="ctrl-right">&#9654;</button>
+            <button class="ctrl-btn" id="ctrl-down">&#9660;</button>
             <button class="ctrl-btn" id="ctrl-action">&#9733;</button>
         </div>
 
@@ -220,6 +145,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=3"></script>
 </body>
 </html>

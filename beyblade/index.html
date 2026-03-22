@@ -1095,7 +1095,7 @@ function spawnPixelParticles(x, y, color, count) {
 // ===== DRAW NUMBER (8-bit style) =====
 function drawNumber8bit(n) {
   if (n.collected) return;
-  const isNext = n.val === nextNumber;
+  const isNext = n.val === getNextTarget();
   const x = Math.floor(n.x);
   const y = Math.floor(n.y);
 
@@ -1348,6 +1348,28 @@ function loop() {
     }
 
     drawHUD();
+
+    // Math mode: show equation prominently at top of screen
+    if (mathMode && mathQuestion && !pendingResult) {
+      const eqY = 16; // Just below HUD bar
+      const eqX = Math.floor(W / 2);
+      // Background banner
+      for (let dy = 0; dy < 14; dy++)
+        for (let dx = -40; dx <= 40; dx++)
+          px(eqX + dx, eqY + dy, 'rgba(0,0,30,0.8)');
+      // Border
+      for (let dx = -41; dx <= 41; dx++) {
+        px(eqX + dx, eqY - 1, '#fa0');
+        px(eqX + dx, eqY + 14, '#fa0');
+      }
+      for (let dy = 0; dy < 14; dy++) {
+        px(eqX - 41, eqY + dy, '#fa0');
+        px(eqX + 41, eqY + dy, '#fa0');
+      }
+      // Equation text - BIG
+      drawText('SOLVE:', eqX - 35, eqY + 2, '#8af', 1);
+      drawText(mathQuestion.text + '=?', eqX - 10, eqY + 2, '#ff4', 2);
+    }
 
     // Math mode announcement
     if (mathModeAnnounce > 0) {

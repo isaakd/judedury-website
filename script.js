@@ -1132,7 +1132,7 @@
         if (!canvas) {
             canvas = document.createElement('canvas');
             canvas.id = 'path-canvas';
-            canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none;';
+            canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:5;pointer-events:none;';
             gameWorld.insertBefore(canvas, gameWorld.firstChild.nextSibling);
         }
         canvas.width = window.innerWidth;
@@ -1442,13 +1442,6 @@
         infoModal.classList.add('hidden');
         galleryModal.classList.add('hidden');
         lightbox.classList.add('hidden');
-    }
-
-    // ===== GAME LOOP =====
-    function gameLoop() {
-        // Map-based: movement is event-driven, not per-frame
-        // Just keep animation frame for any future effects
-        requestAnimationFrame(gameLoop);
     }
 
     // ===== EVENTS =====

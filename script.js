@@ -8,33 +8,44 @@
     const SPRITE_W = 32;
     const SPRITE_H = 40;
 
-    // ===== MAP NODE LAYOUT (% positions on the map) =====
+    // ===== MAP NODE LAYOUT (% positions matching biome map) =====
     const MAP_NODES = {
+        // Start point - center of map
         start:    { x: 50,  y: 62, label: '' },
-        baseball: { x: 28,  y: 44, label: 'BASEBALL' },
-        tennis:   { x: 22,  y: 56, label: 'TENNIS' },
-        cricket:  { x: 34,  y: 62, label: 'CRICKET' },
-        bike:     { x: 46,  y: 42, label: 'BIKE' },
-        dino:     { x: 56,  y: 35, label: 'DINOS' },
-        beyblade: { x: 67,  y: 44, label: 'BEYBLADE' },
-        hotwheels:{ x: 72,  y: 56, label: 'CARS' },
-        lego:     { x: 64,  y: 65, label: 'LEGO' },
-        movies:   { x: 56,  y: 72, label: 'MOVIES' },
-        gallery:  { x: 40,  y: 72, label: 'PHOTOS' },
+        // Grassland (bottom-left) - Sports
+        baseball: { x: 15,  y: 65, label: 'BASEBALL' },
+        tennis:   { x: 12,  y: 72, label: 'TENNIS' },
+        cricket:  { x: 20,  y: 58, label: 'CRICKET' },
+        // Desert (top-left) - Adventure
+        bike:     { x: 12,  y: 38, label: 'BIKE' },
+        // Rainforest (center) - Dinos
+        dino:     { x: 40,  y: 58, label: 'DINOS' },
+        // Ice Mountain (top-center) - Beyblade & Movies
+        beyblade: { x: 50,  y: 35, label: 'BEYBLADE' },
+        movies:   { x: 50,  y: 22, label: 'MOVIES' },
+        // City (right) - Cars
+        hotwheels:{ x: 72,  y: 55, label: 'CARS' },
+        // Lego City (bottom-right)
+        lego:     { x: 82,  y: 72, label: 'LEGO' },
+        // Cloud Kingdom (far right) - Gallery
+        gallery:  { x: 90,  y: 35, label: 'PHOTOS' },
     };
 
-    // Node connections (which nodes connect to which)
+    // Node connections - paths between biomes
     const MAP_EDGES = [
-        ['start', 'cricket'], ['start', 'gallery'], ['start', 'movies'],
-        ['start', 'bike'],
+        // From start
+        ['start', 'cricket'], ['start', 'dino'], ['start', 'beyblade'],
+        // Grassland connections
         ['cricket', 'baseball'], ['cricket', 'tennis'],
-        ['baseball', 'tennis'],
-        ['bike', 'dino'],
-        ['dino', 'beyblade'],
-        ['beyblade', 'hotwheels'],
-        ['hotwheels', 'lego'],
-        ['lego', 'movies'],
-        ['gallery', 'tennis'],
+        ['baseball', 'bike'], ['bike', 'cricket'],
+        // Rainforest connections
+        ['dino', 'beyblade'], ['dino', 'cricket'],
+        // Ice mountain
+        ['beyblade', 'movies'], ['beyblade', 'hotwheels'],
+        // City & Lego
+        ['hotwheels', 'lego'], ['hotwheels', 'gallery'],
+        // Cloud kingdom
+        ['gallery', 'movies'],
     ];
 
     // Build adjacency list

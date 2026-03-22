@@ -29,19 +29,20 @@
 
     <!-- Game World - Mario-style Overworld Map -->
     <div id="game-world" class="hidden">
-        <!-- Map Background -->
-        <img id="map-bg" src="sprites/env/map.png" alt="">
+        <!-- Map wrapper clips overflow -->
+        <div id="map-wrapper">
+            <!-- Map container - sized to image aspect ratio by JS -->
+            <div id="map">
+                <!-- Map image -->
+                <img id="map-bg" src="sprites/env/map.png" alt="">
+                <!-- Path canvas drawn by JS -->
+                <canvas id="map-paths"></canvas>
 
-        <!-- Map Container (all nodes positioned inside) -->
-        <div id="map">
-            <!-- Path canvas drawn by JS -->
-            <canvas id="map-paths" width="960" height="540"></canvas>
-
-            <!-- Map Nodes -->
-            <div class="map-node" id="node-baseball" data-name="baseball">
-                <img class="node-icon" src="sprites/baseball.png" alt="Baseball">
-                <div class="node-label">BASEBALL</div>
-            </div>
+                <!-- Map Nodes -->
+                <div class="map-node" id="node-baseball" data-name="baseball">
+                    <img class="node-icon" src="sprites/baseball.png" alt="Baseball">
+                    <div class="node-label">BASEBALL</div>
+                </div>
             <div class="map-node" id="node-tennis" data-name="tennis">
                 <img class="node-icon" src="sprites/tennis.png" alt="Tennis">
                 <div class="node-label">TENNIS</div>
@@ -79,10 +80,11 @@
                 <div class="node-label">PHOTOS</div>
             </div>
 
-            <!-- Jude Character (walks between nodes) -->
-            <div id="jude">
-                <img id="jude-img" class="jude-sprite" src="sprites/jude.png" alt="Jude">
-                <canvas id="jude-sprite" class="jude-sprite hidden" width="128" height="160"></canvas>
+                <!-- Jude Character (walks between nodes) -->
+                <div id="jude">
+                    <img id="jude-img" class="jude-sprite" src="sprites/jude.png" alt="Jude">
+                    <canvas id="jude-sprite" class="jude-sprite hidden" width="128" height="160"></canvas>
+                </div>
             </div>
         </div>
 

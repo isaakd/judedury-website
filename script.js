@@ -8,30 +8,36 @@
     const SPRITE_W = 32;
     const SPRITE_H = 40;
 
-    // ===== MAP NODE LAYOUT (% positions matching biome map) =====
+    // ===== MAP IMAGE DIMENSIONS =====
+    const MAP_IMG_W = 3462;
+    const MAP_IMG_H = 2505;
+    const MAP_ASPECT = MAP_IMG_W / MAP_IMG_H;
+
+    // ===== MAP NODE LAYOUT (% of MAP IMAGE, not viewport) =====
+    // Positions measured from actual Ghibli map landmarks
     const MAP_NODES = {
-        // Start - center of map near Nursery School/crossroads
-        start:    { x: 48,  y: 52, label: '' },
-        // Kiki's House area (right coast) - Baseball
-        baseball: { x: 68,  y: 48, label: 'BASEBALL' },
-        // Wave Spirits / open sea area - Tennis
-        tennis:   { x: 38,  y: 55, label: 'TENNIS' },
-        // Mountains (top-right, near Zeniba's) - Cricket
-        cricket:  { x: 82,  y: 22, label: 'CRICKET' },
-        // Porthaven coast (mid-left, near Valley of Wind) - Bike
-        bike:     { x: 18,  y: 38, label: 'BIKE' },
-        // Tsukamori Forest (bottom-left, near Totoro) - Dinos
-        dino:     { x: 14,  y: 72, label: 'DINOS' },
-        // Howl's Castle / Market Chipping (upper) - Beyblade
-        beyblade: { x: 42,  y: 22, label: 'BEYBLADE' },
-        // Laputa floating island (top-left) - Movies
-        movies:   { x: 6,   y: 12, label: 'MOVIES' },
-        // Koriko City (right coast) - Hot Wheels/Cars
-        hotwheels:{ x: 78,  y: 55, label: 'CARS' },
-        // Iron Town (upper center) - Lego (building!)
-        lego:     { x: 55,  y: 18, label: 'LEGO' },
-        // Sosuke's House / coastal (bottom-center) - Gallery
-        gallery:  { x: 42,  y: 72, label: 'PHOTOS' },
+        // Laputa floating island (top-left) -> MOVIES
+        movies:    { x: 5.5,  y: 8.0,  label: 'MOVIES' },
+        // Pazu's Town (left coast) -> BIKE
+        bike:      { x: 8.0,  y: 20.0, label: 'BIKE' },
+        // Valley of Wind (mid-left) -> TENNIS
+        tennis:    { x: 10.0, y: 26.0, label: 'TENNIS' },
+        // Emishi Village (upper mountains) -> CRICKET
+        cricket:   { x: 38.0, y: 6.0,  label: 'CRICKET' },
+        // Tsukamori Forest / Totoro (bottom-left) -> DINOS
+        dino:      { x: 7.5,  y: 40.0, label: 'DINOS' },
+        // Howl's Castle (top-center) -> BEYBLADE
+        beyblade:  { x: 24.0, y: 11.0, label: 'BEYBLADE' },
+        // Iron Town (upper center-right) -> LEGO
+        lego:      { x: 33.0, y: 14.0, label: 'LEGO' },
+        // Nursery School / crossroads (center) -> START
+        start:     { x: 30.0, y: 30.0, label: '' },
+        // Kiki's House (right coast) -> BASEBALL
+        baseball:  { x: 52.0, y: 30.0, label: 'BASEBALL' },
+        // Koriko City (far right coast) -> CARS
+        hotwheels: { x: 58.0, y: 38.0, label: 'CARS' },
+        // Deserted Town / Clock Tower (far upper-right) -> PHOTOS
+        gallery:   { x: 55.0, y: 12.0, label: 'PHOTOS' },
     };
 
     // Node connections - paths following Ghibli map geography
@@ -1125,10 +1131,42 @@
         drawSprite(spriteCanvas, spriteFrames[frameIndex], facingLeft);
     }
 
-    // ===== MAP MOVEMENT =====
+    // ===== MAP SIZING & MOVEMENT =====
+
+    function sizeMap() {
+        // Size #map to cover viewport while maintaining image aspect ratio
+        // This ensures node % positions align with map landmarks
+        const wrapper = document.getElementById('map-wrapper');
+        if (!wrapper) return;
+        const vw = wrapper.clientWidth;
+        const vh = wrapper.clientHeight;
+        const viewAspect = vw / vh;
+
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+
+        let mapW, mapH;
+        if (viewAspect > MAP_ASPECT) {
+            // Viewport is wider than map - match width, map taller than needed
+            mapW = vw;
+            mapH = vw / MAP_ASPECT;
+        } else {
+            // Viewport is taller than map - match height, map wider than needed
+            mapH = vh;
+            mapW = vh * MAP_ASPECT;
+        }
+
+        mapEl.style.width = mapW + 'px';
+        mapEl.style.height = mapH + 'px';
+
+        // Redraw paths at new size
+        drawMapPaths();
+    }
 
     function positionNodes() {
-        // Position all map nodes based on % coordinates
+        // Size the map container first
+        sizeMap();
+        // Position all map nodes based on % of map image
         for (const [id, node] of Object.entries(MAP_NODES)) {
             if (id === 'start') continue; // Start node is invisible
             const el = document.getElementById('node-' + id);
@@ -1530,7 +1568,10 @@
 
     // Resize
     window.addEventListener('resize', () => {
-        if (gameStarted) drawMapPaths();
+        if (gameStarted) {
+            sizeMap();
+            positionNodes();
+        }
     });
 
     // Arrow keys for lightbox navigation
